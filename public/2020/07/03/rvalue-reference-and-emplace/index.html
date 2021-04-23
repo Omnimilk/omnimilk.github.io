@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>rvalue reference and emplace | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="右值引用和emplace这篇文章初衷是好奇push_back和emplace_back的区别，了解之后发现绕不开右值引用，在此一并记录一下。 右值引用右值引用（rvalue reference）是C++11中引入的新特性，显然是与C++11之前普通左值引用相对的一个概念。下面的右值引用的介绍很多参考自这篇文章。 左值与右值一个粗略的定义如下： 左值是一个可以出现在赋值符号（&#x3D;）左边或者右边的表达式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rvalue reference and emplace">
+<meta property="og:url" content="http://yoursite.com/2020/07/03/rvalue-reference-and-emplace/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="右值引用和emplace这篇文章初衷是好奇push_back和emplace_back的区别，了解之后发现绕不开右值引用，在此一并记录一下。 右值引用右值引用（rvalue reference）是C++11中引入的新特性，显然是与C++11之前普通左值引用相对的一个概念。下面的右值引用的介绍很多参考自这篇文章。 左值与右值一个粗略的定义如下： 左值是一个可以出现在赋值符号（&#x3D;）左边或者右边的表达式">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-07-03T03:37:11.000Z">
+<meta property="article:modified_time" content="2020-07-03T08:40:48.139Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="c++">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-rvalue-reference-and-emplace" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/03/rvalue-reference-and-emplace/" class="article-date">
+  <time datetime="2020-07-03T03:37:11.000Z" itemprop="datePublished">2020-07-03</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      rvalue reference and emplace
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="右值引用和emplace"><a href="#右值引用和emplace" class="headerlink" title="右值引用和emplace"></a>右值引用和emplace</h1><p>这篇文章初衷是好奇<code>push_back</code>和<code>emplace_back</code>的区别，了解之后发现绕不开右值引用，在此一并记录一下。</p>
+<h2 id="右值引用"><a href="#右值引用" class="headerlink" title="右值引用"></a>右值引用</h2><p>右值引用（<code>rvalue reference</code>）是C++11中引入的新特性，显然是与C++11之前普通左值引用相对的一个概念。下面的右值引用的介绍很多参考自<a href="http://thbecker.net/articles/rvalue_references/section_02.html" target="_blank" rel="noopener">这篇文章</a>。</p>
+<h3 id="左值与右值"><a href="#左值与右值" class="headerlink" title="左值与右值"></a>左值与右值</h3><p>一个粗略的定义如下：</p>
+<p>左值是一个可以出现在赋值符号（<code>=</code>）左边或者右边的表达式, 可以理解为对一块内存的引用；</p>
+<p>右值是一个只能出现在赋值符号右边的表达式， 注意右值不是对内存的引用，因此不能进行取地址操作。</p>
+<p>如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">42</span>;</span><br><span class="line"><span class="keyword">int</span> b = <span class="number">43</span>;</span><br><span class="line"><span class="comment">// a, b 均为左值</span></span><br><span class="line">a = b;</span><br><span class="line">b = a;</span><br><span class="line"><span class="comment">// a + b 为右值</span></span><br><span class="line"><span class="keyword">int</span> c = a  + b;</span><br><span class="line">a + b = <span class="number">42</span>; <span class="comment">// error!</span></span><br><span class="line"><span class="comment">// 不能对右值取地址</span></span><br><span class="line">a  = foo(); <span class="comment">// ok, foo() is a rvalue</span></span><br><span class="line"><span class="keyword">int</span>* p = &amp;foo(); <span class="comment">// invalid, 不能对右值取地址</span></span><br></pre></td></tr></table></figure>
+<h3 id="为什么要右值引用？"><a href="#为什么要右值引用？" class="headerlink" title="为什么要右值引用？"></a>为什么要右值引用？</h3><h4 id="move语义"><a href="#move语义" class="headerlink" title="move语义"></a>move语义</h4><p>假设类X中包括一个指向资源的指针<code>m_pResource</code>，我们想实现一个接收<strong>临时对象</strong>作为参数的拷贝赋值操作符，其实现可能如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">X&amp; X::<span class="keyword">operator</span>=(<span class="keyword">const</span> X &amp;rhs) &#123;</span><br><span class="line">  <span class="comment">//1. 拷贝rhs.m_pResource</span></span><br><span class="line">  <span class="comment">//2. 析构rhs.m_pResource指向的资源</span></span><br><span class="line">  <span class="comment">//3. 将拷贝的资源赋给self.m_pResource</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不难看出，上面对资源<code>m_pResource</code>的拷贝和析构十分低效，我们可以直接和临时实例交换指针（此所谓move语义）。另外，对于非临时对象的拷贝，我们可能不想析构其资源。因此我们需要一个类型来标识这样的临时对象，对它进行单独的处理，例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">X&amp; X::operator&#x3D;( &lt;Desired type&gt;rhs) &#123;</span><br><span class="line">  &#x2F;&#x2F;1. swap this-&gt;m_pResource and rhs.m_pResource</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其实右值引用就是我们想要的类型，上面代码中的<code>&lt;Desired type&gt;</code>我们可以用<code>X&amp;&amp;</code>替代，表示是X的右值引用。</p>
+<h2 id="emplace-back-or-push-back"><a href="#emplace-back-or-push-back" class="headerlink" title="emplace_back or push_back?"></a>emplace_back or push_back?</h2><h3 id="一个小实验"><a href="#一个小实验" class="headerlink" title="一个小实验"></a>一个小实验</h3><p>猜猜看下面的代码会进行几次复制操作？</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Point</span> &#123;</span></span><br><span class="line">  <span class="keyword">float</span> x, y;</span><br><span class="line">  Point(<span class="keyword">float</span> x, <span class="keyword">float</span> y):x(x), y(y)&#123;&#125;</span><br><span class="line"></span><br><span class="line">  Point(<span class="keyword">const</span> Point&amp; <span class="built_in">point</span>):x(<span class="built_in">point</span>.x), y(<span class="built_in">point</span>.y) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"copying!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Point&gt; points;</span><br><span class="line">  points.push_back(Point(<span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line">  points.push_back(Point(<span class="number">3</span>, <span class="number">4</span>));</span><br><span class="line">  points.push_back(Point(<span class="number">5</span>, <span class="number">6</span>));</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>答案是六次，其中三次是将临时<code>Point</code>对象拷贝至容器，有一次是容器容量从1到2的拷贝，有两次是容器容量从2到4的拷贝。</p>
+<h4 id="消除扩容拷贝"><a href="#消除扩容拷贝" class="headerlink" title="消除扩容拷贝"></a>消除扩容拷贝</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Point</span> &#123;</span></span><br><span class="line">  <span class="keyword">float</span> x, y;</span><br><span class="line">  Point(<span class="keyword">float</span> x, <span class="keyword">float</span> y):x(x), y(y)&#123;&#125;</span><br><span class="line"></span><br><span class="line">  Point(<span class="keyword">const</span> Point&amp; <span class="built_in">point</span>):x(<span class="built_in">point</span>.x), y(<span class="built_in">point</span>.y) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"copying!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Point&gt; points;</span><br><span class="line">  <span class="comment">// 预分配内存 <span class="doctag">NOTE:</span> 和std::vector&lt;Point&gt; points(3)的区别，reserve只分配内存不调用构造函数</span></span><br><span class="line">  points.reserve(<span class="number">3</span>);</span><br><span class="line">  points.push_back(Point(<span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line">  points.push_back(Point(<span class="number">3</span>, <span class="number">4</span>));</span><br><span class="line">  points.push_back(Point(<span class="number">5</span>, <span class="number">6</span>));</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在只用进行三次插入容器时的拷贝</p>
+<h4 id="move语义消除插入容器时的拷贝"><a href="#move语义消除插入容器时的拷贝" class="headerlink" title="move语义消除插入容器时的拷贝"></a>move语义消除插入容器时的拷贝</h4><p>直接将参数forward给容器，直接在容器中构造。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Point</span> &#123;</span></span><br><span class="line">  <span class="keyword">float</span> x, y;</span><br><span class="line">  Point(<span class="keyword">float</span> x, <span class="keyword">float</span> y):x(x), y(y)&#123;&#125;</span><br><span class="line"></span><br><span class="line">  Point(<span class="keyword">const</span> Point&amp; <span class="built_in">point</span>):x(<span class="built_in">point</span>.x), y(<span class="built_in">point</span>.y) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"copying!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Point&gt; points;</span><br><span class="line">  points.emplace_back(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">  points.emplace_back(<span class="number">3</span>, <span class="number">4</span>);</span><br><span class="line">  points.emplace_back(<span class="number">5</span>, <span class="number">6</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在拷贝的次数为0次！</p>
+<h3 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h3><p>首先看看C++11中两者的接口：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt; <span class="class"><span class="keyword">class</span>... <span class="title">Args</span> &gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">emplace_back</span>( <span class="title">Args</span>&amp;&amp;... <span class="title">args</span> );</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;T, Allocator&gt;::push_back( <span class="keyword">const</span> T&amp; value );</span><br><span class="line"><span class="keyword">void</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;T, Allocator&gt;::push_back( T&amp;&amp; value );</span><br></pre></td></tr></table></figure>
+<p>注意到接收右值的接口的差别，push_back只能接收Vector中存储类型的右值作为参数，而emplace可以接收变长模板作为参数，尝试为变长模板找到最合适的构造函数直接在容器中构建。</p>
+<p>NOTE：实验中的例子，emplace_back的变长参数也可以接收<code>Point</code>对象，此时会先调用Point的默认构造函数然后调用复制构造函数。对应代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Point</span> &#123;</span></span><br><span class="line">  <span class="keyword">float</span> x, y;</span><br><span class="line">  Point(<span class="keyword">float</span> x, <span class="keyword">float</span> y):x(x), y(y)&#123;&#125;</span><br><span class="line"></span><br><span class="line">  Point(<span class="keyword">const</span> Point&amp; <span class="built_in">point</span>):x(<span class="built_in">point</span>.x), y(<span class="built_in">point</span>.y) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"copying!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Point&gt; points;</span><br><span class="line">  points.reserve(<span class="number">3</span>);</span><br><span class="line">  points.emplace_back(Point(<span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line">  points.emplace_back(Point(<span class="number">3</span>, <span class="number">4</span>));</span><br><span class="line">  points.emplace_back(Point(<span class="number">5</span>, <span class="number">6</span>));</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/03/rvalue-reference-and-emplace/" data-id="ckcbb9ud4000yys1d2plc2s6p" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/07/03/SNN-1-LIF/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          SNN[1]: LIF
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/07/02/pybind11-install/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">pybind11 install</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-compiler/" rel="tag">LLVM, compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mindspore-Python-Optimizer-C/" rel="tag">Mindspore, Python, Optimizer, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mood/" rel="tag">Mood</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance-C/" rel="tag">Performance, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow-Deep-Learning/" rel="tag">TensorFlow, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mind-hack/" rel="tag">mind-hack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%AA%E6%9E%81-rendering/" rel="tag">太极, rendering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/LLVM-compiler/" style="font-size: 10px;">LLVM, compiler</a> <a href="/tags/Mindspore-Python-Optimizer-C/" style="font-size: 10px;">Mindspore, Python, Optimizer, C++</a> <a href="/tags/Mood/" style="font-size: 10px;">Mood</a> <a href="/tags/Performance-C/" style="font-size: 10px;">Performance, C++</a> <a href="/tags/SNN-Deep-Learning/" style="font-size: 20px;">SNN, Deep Learning</a> <a href="/tags/TensorFlow-Deep-Learning/" style="font-size: 10px;">TensorFlow, Deep Learning</a> <a href="/tags/c/" style="font-size: 15px;">c++</a> <a href="/tags/mind-hack/" style="font-size: 10px;">mind-hack</a> <a href="/tags/pybind11-c-python/" style="font-size: 15px;">pybind11, c++, python</a> <a href="/tags/%E5%A4%AA%E6%9E%81-rendering/" style="font-size: 10px;">太极, rendering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/07/LLVM0/">LLVM0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/31/Taichi0/">Taichi0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/23/two-list-system/">two-list system</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/09/Python-Pass/">Python_Pass</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

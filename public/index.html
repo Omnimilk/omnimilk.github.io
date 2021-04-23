@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="posts-LLVM0" class="article article-type-posts" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/09/07/LLVM0/" class="article-date">
+  <time datetime="2020-09-07T02:29:44.000Z" itemprop="datePublished">2020-09-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/09/07/LLVM0/">LLVM0</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="LLVM学习笔记0：安装"><a href="#LLVM学习笔记0：安装" class="headerlink" title="LLVM学习笔记0：安装"></a>LLVM学习笔记0：安装</h1><p>算是重拾LLVM，这次重头记录学习历程。</p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>安装比较简单，<code>apt-get</code>直接安装即可：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install clang</span><br><span class="line">sudo apt-get install llvm</span><br></pre></td></tr></table></figure>
+<h2 id="测试安装"><a href="#测试安装" class="headerlink" title="测试安装"></a>测试安装</h2><p>使用LLVM CookBook里的一个小例子验证安装是否成功。</p>
+<p>demo code:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">define i32 @test1(i32 %A) &#123;</span><br><span class="line">    %B &#x3D; add i32 %A, 0</span><br><span class="line">    ret i32 %B</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">define internal i32 @test(i32 %X, i32 %dead) &#123;</span><br><span class="line">    ret i32 %X</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">define i32 @caller() &#123;</span><br><span class="line">    %A &#x3D; call i32 @test(i32 123, i32 456)</span><br><span class="line">    ret i32 %A</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>将上述LLVM代码输入到<code>testfile.ll</code></li>
+<li>运行<code>opt</code>工具中指令合并的pass：<code>opt -S -instcombine testfile.ll -o output1.ll</code></li>
+<li>运行死代码消除pass：<code>opt -S -deadargelim testfile.ll -o output2.ll</code></li>
+</ol>
+<p>我们容易通过查看上面运行pass后的输出代码确认pass已生效：</p>
+<p><code>output1.ll</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">; ModuleID &#x3D; &#39;tesetfile.ll&#39;</span><br><span class="line"></span><br><span class="line">define i32 @test1(i32 %A) &#123;</span><br><span class="line">    ret i32 %A  ; eliminated adding 0</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">define internal i32 @test(i32 %X, i32 %dead) &#123;</span><br><span class="line">    return i32 %X</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">define i32 @caller() &#123;</span><br><span class="line">    %A &#x3D; call i32 @test(i32 123, i32 456)</span><br><span class="line">    ret i32 %A</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>output2.ll</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">; ModuleID &#x3D; &#39;testfile.ll&#39;</span><br><span class="line"></span><br><span class="line">define i32 @test1(i32 %A) &#123;</span><br><span class="line">    %B &#x3D; add i32 %A, 0</span><br><span class="line">    ret i32 %B</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">define internal i32 @test(i32 %X) &#123; ; eliminated dead arg</span><br><span class="line">    ret i32 %X</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">define i32 @caller() &#123;</span><br><span class="line">    %A &#x3D; call i32 @test(i32 123) ; elminated dead arg</span><br><span class="line">    ret i32 %A</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/09/07/LLVM0/" data-id="ckes6o93a00009079gvsa4wbj" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LLVM-compiler/" rel="tag">LLVM, compiler</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="posts-Taichi0" class="article article-type-posts" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/08/31/Taichi0/" class="article-date">
+  <time datetime="2020-08-31T08:26:51.000Z" itemprop="datePublished">2020-08-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/08/31/Taichi0/">Taichi0</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Taichi学习"><a href="#Taichi学习" class="headerlink" title="Taichi学习"></a>Taichi学习</h1><p>占个坑，定个无ddl小目标：做个小青蛙。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/08/31/Taichi0/" data-id="ckes6o93f000190792zwzherk" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%AA%E6%9E%81-rendering/" rel="tag">太极, rendering</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-two-list-system" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/08/23/two-list-system/" class="article-date">
+  <time datetime="2020-08-23T12:09:15.000Z" itemprop="datePublished">2020-08-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/08/23/two-list-system/">two-list system</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="注意力分配：Two-List-System"><a href="#注意力分配：Two-List-System" class="headerlink" title="注意力分配：Two-List System"></a>注意力分配：Two-List System</h1><p>对于我这种容易分心的人，有限的精力很容易被看起来有趣的事情骗走。但是要做一只卓有成效的社畜，有长远的目标并为之专注是必须的。最近看到一个巴菲特的目标管理方式，感觉很有启发，记录并用起来。</p>
+<p>故事最原始的出处没有查证，<a href="https://hacpai.com/article/1534498720955" target="_blank" rel="noopener">随手找了一个版本</a>。大意是，我们都有很多的目标，花时间将其中对我们来说最重要的整理出来是很值得的。首先，我们可以整理出对我们最重要的25个目标。但我们精力有限，显然不可能同时追求这些目标，可以再从这25个目标中选出对我们来说最重要的5个形成一个短名单。</p>
+<p>对于这样两个目标列表的使用容易陷入一个误区：优先追求对我们最重要的5个目标，剩下的20个目标放于次要的优先级，等我们有空再去花精力。但是巴菲特告诉我们，我们要尽力避免在剩下的20个目标上花任何精力。因为正是这些次要目标才是最容易让我们分心浪费掉精力的，因为他们会给我们错误的激励（那些我们完全不感兴趣的目标反而不会）。</p>
+<p>知易行难，小目标理起来～</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/08/23/two-list-system/" data-id="cke72e6ac0000t3794pc6fg4o" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mind-hack/" rel="tag">mind-hack</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="posts-C-Performance-Trick-OutOfLine-Pattern" class="article article-type-posts" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/" class="article-date">
+  <time datetime="2020-08-14T02:54:58.000Z" itemprop="datePublished">2020-08-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="OutOfLine模式提升C-代码访存局部性"><a href="#OutOfLine模式提升C-代码访存局部性" class="headerlink" title="OutOfLine模式提升C++代码访存局部性"></a>OutOfLine模式提升C++代码访存局部性</h1><p>公司内网看到一个提升C++代码性能的模式（源头是<a href="https://blog.headlandstech.com/2018/08/15/outofline-a-memory-locality-pattern-for-high-performance-c/" target="_blank" rel="noopener">这篇blog</a>），能够以一种容易维护的方式很大程度提升访存的局部性，感觉挺有意思，记录一下。</p>
+<h2 id="从例子说起"><a href="#从例子说起" class="headerlink" title="从例子说起"></a>从例子说起</h2><p>假设你的系统需要打开大量的路径(文件、sockets，pipes)，对于这些路径你需要打开、处理、关闭对应的文件描述符并取消文件描述符和对应路径之间的联系。</p>
+<p>对于这样的需求，我们可能写出下面的代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UnlinkingFD</span> &#123;</span></span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">string</span> path;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">int</span> fd;</span><br><span class="line"></span><br><span class="line">  UnlinkingFD(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; p) : path(p) &#123;</span><br><span class="line">    fd = <span class="built_in">open</span>(p.c_str(), O_RDWR, <span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  ~UnlinkingFD() &#123;</span><br><span class="line">      <span class="built_in">close</span>(fd); </span><br><span class="line">      unlink(path.c_str());</span><br><span class="line">  &#125;</span><br><span class="line">  UnlinkingFD(<span class="keyword">const</span> UnlinkingFD&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>每个打开的路径对应一个上面的对象保存对应的路径和文件描述符，大量的打开的文件描述符可能以<code>UnlinkingFD</code>对象形式保存在数组中。上面的代码在功能和逻辑上是完好的，RAII也会在对象生命周期结束时关掉文件描述符并取消和对应路径之间的关联。</p>
+<h3 id="场景-amp-性能分析"><a href="#场景-amp-性能分析" class="headerlink" title="场景&amp;性能分析"></a>场景&amp;性能分析</h3><p>假设我们经常需要用到<code>fd</code>，但是<code>path</code>只在对象生命周期结束时使用。因为一个上面的<code>UnlinkingFD</code>对象需要占用40Bytes，而我们常用的<code>fd</code>只占用了其中的4Bytes，这意味着我们在访问<code>UnlinkingFD</code>数组时cache miss的概率大大提升。</p>
+<h3 id="方案1"><a href="#方案1" class="headerlink" title="方案1"></a>方案1</h3><p>将<code>array-of-structs</code>变为<code>struct-of-arrays</code>，这当然可以帮助提升性能，但是我们将无法使用RAII来帮我们做资源管理，单一的fd无法及时得到释放。</p>
+<h3 id="方案2"><a href="#方案2" class="headerlink" title="方案2"></a>方案2</h3><p><code>UnlinkingFD</code>对象中不直接保存<code>string</code>对象，而是使用一个<code>unique_ptr</code>指针。这样一个<code>UnlinkingFD</code>对象就从40Bytes降低到了16Bytes，降低了cache miss的概率。</p>
+<h3 id="方案3：OutOfLine模式"><a href="#方案3：OutOfLine模式" class="headerlink" title="方案3：OutOfLine模式"></a>方案3：OutOfLine模式</h3><p>OutOfLine模式可以帮我们将像<code>path</code>这样的冷数据完全移到对象之外，但是仍然保留RAII为我们管理资源。</p>
+<h4 id="OutOfLine用法"><a href="#OutOfLine用法" class="headerlink" title="OutOfLine用法"></a>OutOfLine用法</h4><p><code>OutOfLine</code>类是一个<a href="https://omnimilk.github.io/2020/07/01/expression-template/" target="_blank" rel="noopener">静态多态</a>的基类。 使用此基类时要传入两个模板参数，第一个模板参数为继承的子类，第二个模板参数为要挂在“热”对象上的冷数据的类型。</p>
+<p>例如，对于上面的<code>UnlinkingFD</code>类，改写后的用法如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">UnlinkingFD</span> :</span> <span class="keyword">private</span> OutOfLine&lt;UnlinkingFD, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; &#123;</span><br><span class="line">  <span class="keyword">int</span> fd;</span><br><span class="line"></span><br><span class="line">  UnlinkingFD(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; p) : OutOfLine&lt;UnlinkingFD, <span class="built_in">std</span>::<span class="built_in">string</span>&gt;(p) &#123;</span><br><span class="line">    fd = <span class="built_in">open</span>(p.c_str(), O_RDWR, <span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  ~UnlinkingFD();</span><br><span class="line">  UnlinkingFD(<span class="keyword">const</span> UnlinkingFD&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><p>OutOfLine模式将冷数据从对象中剥离出去的思路时通过一个全局对象将“热”对象的指针和冷数据关联起来。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">FastData</span>, <span class="title">class</span> <span class="title">ColdData</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">class</span> <span class="title">OutOfLine</span> &#123;</span></span><br><span class="line"><span class="keyword">inline</span> <span class="keyword">static</span> <span class="built_in">std</span>::<span class="built_in">map</span>&lt;OutOfLine <span class="keyword">const</span>*, <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;ColdData&gt;&gt; global_map_;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// 每次创建“热”数据对象时，将热数据对象的指针关联到对应的冷数据上</span></span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span>... <span class="title">TArgs</span>&gt;</span></span><br><span class="line"><span class="class">    <span class="title">explicit</span> <span class="title">OutOfLine</span>(<span class="title">TArgs</span>&amp;&amp;.. <span class="title">args</span>) &#123;</span></span><br><span class="line">        global_map_[<span class="keyword">this</span>] = <span class="built_in">std</span>::make_unique&lt;ColdData&gt;(<span class="built_in">std</span>::forward&lt;TArgs&gt;(args)...);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// “热”数据对象析构时，将全局映射中对应的冷数据对象也清理掉</span></span><br><span class="line">    ~OutOfLine() &#123;global_map_.erase(<span class="keyword">this</span>);&#125;</span><br><span class="line">    <span class="comment">// move “热”数据对象时，将对应的冷数据重新关联（此后不应该在通过旧的“热”数据对象来找冷数据）</span></span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">OutOfLine</span><span class="params">(OutOfLine&amp;&amp; other)</span> </span>&#123; *<span class="keyword">this</span> = other;&#125;</span><br><span class="line">    OutOfLine&amp; <span class="keyword">operator</span>=(OutOfLine&amp;&amp; other) &#123;</span><br><span class="line">        global_map_[<span class="keyword">this</span>] = <span class="built_in">std</span>::<span class="built_in">move</span>(global_map_[&amp;other]);</span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// non-copyable for simplicity</span></span><br><span class="line">    OutOfLine(OutOfLine <span class="keyword">const</span>&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">    OutOfLine&amp; <span class="keyword">operator</span>=(OutOfLine <span class="keyword">const</span>&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">    <span class="comment">// 获取当前“热”对象对应的冷数据</span></span><br><span class="line">    <span class="function">ColdData&amp; <span class="title">cold</span><span class="params">()</span> <span class="keyword">noexcept</span> </span>&#123; <span class="keyword">return</span> *global_map_[<span class="keyword">this</span>]; &#125;</span><br><span class="line">    <span class="function">ColdData <span class="keyword">const</span>&amp; <span class="title">cold</span><span class="params">()</span> <span class="keyword">const</span> <span class="keyword">noexcept</span> </span>&#123; <span class="keyword">return</span> *global_map_[<span class="keyword">this</span>]; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="性能-amp-资源管理"><a href="#性能-amp-资源管理" class="headerlink" title="性能&amp;资源管理"></a>性能&amp;资源管理</h4><p>静态继承自<code>OutOfLine</code>类的<code>UnlinkingFD</code>现在只有4Bytes， 因此需要高频访问的<code>UnlinkingFD</code>对象的数组的cache miss被降到最低。同时RAII会同时替我们管理“热”数据对象及对应的冷数据。</p>
+<h4 id="NOTE-构造函数初始化顺序"><a href="#NOTE-构造函数初始化顺序" class="headerlink" title="NOTE: 构造函数初始化顺序"></a>NOTE: 构造函数初始化顺序</h4><p>上面静态继承的过程实际上一定程度上限定了热数据和冷数据构造的顺序，因为C++构造函数初始化的顺序如下：</p>
+<ol>
+<li>构造虚拟基类，继承自多个虚拟基类时，按照被继承的顺序构造</li>
+<li>构造非虚拟基类，继承自多个非虚拟基类时，按照被继承的顺序构造</li>
+<li>构造成员对象，按照成员对象的声明顺序构造</li>
+<li>调用类自身的构造函数</li>
+</ol>
+<p>因此，当我们构造一个“热”数据对象时，会首先构造<code>OutOfLine</code>基类（此时<code>OutOfLine</code>类的构造函数中会构造冷数据对象），然后构造“热”数据对象。这就意味着<strong><em>冷数据对象的构造不能依赖于“热”数据对象</em></strong>。</p>
+<h4 id="控制初始化顺序"><a href="#控制初始化顺序" class="headerlink" title="控制初始化顺序"></a>控制初始化顺序</h4><p>当冷数据对象的初始化依赖于热数据对象时，我们需要hack一下初始化的顺序。方法如下：为<code>OutOfLine</code>静态基类提供一个特别的构造函数，这个构造函数以tag类<code>TwoPhaseInit</code>为入参。当我们调用这个构造函数时，冷数据不会被初始化，此时处于一种半构造的状态。然后我们在“热”数据初始化之后显式的调用<code>init_cold_data</code>来初始化冷数据。释放时同理可以引入<code>release_cold_data</code>来hack析构的顺序。代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">TwoPhaseInit</span> &#123;</span>&#125;;</span><br><span class="line">  OutOfLine(TwoPhaseInit)&#123;&#125;</span><br><span class="line">  <span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span>... <span class="title">TArgs</span>&gt;</span></span><br><span class="line"><span class="class">  <span class="title">void</span> <span class="title">init_cold_data</span>(<span class="title">TArgs</span>&amp;&amp;... <span class="title">args</span>) &#123;</span></span><br><span class="line">    global_map_.<span class="built_in">find</span>(<span class="keyword">this</span>)-&gt;second = <span class="built_in">std</span>::make_unique&lt;ColdData&gt;(<span class="built_in">std</span>::forward&lt;TArgs&gt;(args)...);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">release_cold_data</span><span class="params">()</span> </span>&#123; global_map_[<span class="keyword">this</span>].reset(); &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="性能测试"><a href="#性能测试" class="headerlink" title="性能测试"></a>性能测试</h3><h4 id="OutOfLine代码"><a href="#OutOfLine代码" class="headerlink" title="OutOfLine代码"></a><code>OutOfLine</code>代码</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> once</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;memory&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">FastData</span>, <span class="title">class</span> <span class="title">ColdData</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">class</span> <span class="title">OutOfLine</span> &#123;</span></span><br><span class="line">  <span class="keyword">inline</span> <span class="keyword">static</span> <span class="built_in">std</span>::<span class="built_in">map</span>&lt;OutOfLine <span class="keyword">const</span>*, <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;ColdData&gt;&gt; global_map_;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span>... <span class="title">TArgs</span>&gt;</span></span><br><span class="line"><span class="class">  <span class="title">OutOfLine</span>(<span class="title">TArgs</span>&amp;&amp;... <span class="title">args</span>) :</span> OutOfLine(TwoPhaseInit()) &#123;</span><br><span class="line">    init_cold_data(<span class="built_in">std</span>::forward&lt;TArgs&gt;(args)...);</span><br><span class="line">  &#125;</span><br><span class="line">  ~OutOfLine() &#123; global_map_.erase(<span class="keyword">this</span>); &#125;</span><br><span class="line">  <span class="function"><span class="keyword">explicit</span> <span class="title">OutOfLine</span><span class="params">(OutOfLine&amp;&amp; other)</span> : <span class="title">OutOfLine</span><span class="params">(OutOfLine::TwoPhaseInit())</span> </span>&#123; (*<span class="keyword">this</span>) = <span class="built_in">std</span>::<span class="built_in">move</span>(other); &#125;</span><br><span class="line">  OutOfLine&amp; <span class="keyword">operator</span>=(OutOfLine&amp;&amp; other) &#123;</span><br><span class="line">    global_map_[<span class="keyword">this</span>] = <span class="built_in">std</span>::<span class="built_in">move</span>(global_map_[&amp;other]);</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  OutOfLine(OutOfLine <span class="keyword">const</span>&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">  OutOfLine&amp; <span class="keyword">operator</span>=(OutOfLine <span class="keyword">const</span>&amp;) = <span class="keyword">delete</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function">ColdData&amp; <span class="title">cold</span><span class="params">()</span> <span class="keyword">noexcept</span> </span>&#123; <span class="keyword">return</span> *global_map_[<span class="keyword">this</span>]; &#125;</span><br><span class="line">  <span class="function">ColdData <span class="keyword">const</span>&amp; <span class="title">cold</span><span class="params">()</span> <span class="keyword">const</span> <span class="keyword">noexcept</span> </span>&#123; <span class="keyword">return</span> *global_map_[<span class="keyword">this</span>]; &#125;</span><br><span class="line"></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">TwoPhaseInit</span> &#123;</span>&#125;;</span><br><span class="line">  OutOfLine(TwoPhaseInit) &#123; global_map_.try_emplace(<span class="keyword">this</span>); &#125;</span><br><span class="line">  <span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span>... <span class="title">TArgs</span>&gt;</span></span><br><span class="line"><span class="class">  <span class="title">void</span> <span class="title">init_cold_data</span>(<span class="title">TArgs</span>&amp;&amp;... <span class="title">args</span>) &#123;</span></span><br><span class="line">    global_map_.<span class="built_in">find</span>(<span class="keyword">this</span>)-&gt;second = <span class="built_in">std</span>::make_unique&lt;ColdData&gt;(<span class="built_in">std</span>::forward&lt;TArgs&gt;(args)...);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">release_cold_data</span><span class="params">()</span> </span>&#123; global_map_[<span class="keyword">this</span>].reset(); &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="benchmark代码"><a href="#benchmark代码" class="headerlink" title="benchmark代码"></a>benchmark代码</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ --std=c++1z -Wall -Wextra -O3 -o ool_benchmark ool_benchmark.cpp</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"out_of_line.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Deomonstrates keeping the cold data in the object with the fast data</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Together</span> &#123;</span></span><br><span class="line">  <span class="built_in">std</span>::<span class="keyword">uint32_t</span> value;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">string</span> metadata;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Demonstrates "giving up" and just not storing the associated cold-data</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">OnlyFastData</span> &#123;</span></span><br><span class="line">  <span class="built_in">std</span>::<span class="keyword">uint32_t</span> value;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Demonstrates using OutOfLine to store the cold data</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">WithOOL</span> :</span> <span class="keyword">public</span> OutOfLine&lt;WithOOL, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; &#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="keyword">uint32_t</span> value;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// The crux of the optimization is that there's no space-overhead</span></span><br><span class="line"><span class="keyword">static_assert</span>(<span class="keyword">sizeof</span>(WithOOL) == <span class="keyword">sizeof</span>(OnlyFastData));</span><br><span class="line"></span><br><span class="line"><span class="comment">// We synthesize the data up-front so the generation can't interfere with the measured behavior in any way</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">Data</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">auto</span> <span class="title">make_data</span>() &#123;</span></span><br><span class="line">  srand(<span class="number">20180101</span>);</span><br><span class="line">  <span class="function"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Data&gt; <span class="title">data</span><span class="params">(<span class="number">10000000</span>)</span></span>;</span><br><span class="line">  <span class="keyword">for</span> (Data&amp; d : data) &#123; d.value = rand(); &#125;</span><br><span class="line">  <span class="keyword">return</span> data;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// We time to measure throughput of touching all the fast data once in sequence</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">Data</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">trial</span>(<span class="title">const</span> <span class="title">char</span>* <span class="title">const</span> <span class="title">name</span>, <span class="title">const</span> <span class="title">Data</span>&amp; <span class="title">data</span>, <span class="title">const</span> <span class="title">bool</span> <span class="title">print</span>) &#123;</span></span><br><span class="line">  <span class="built_in">std</span>::<span class="keyword">uint32_t</span> <span class="built_in">running</span> = <span class="number">0U</span>;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> before = <span class="built_in">std</span>::chrono::system_clock::now();</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; d : data) &#123; <span class="built_in">running</span> += d.value; &#125;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> after = <span class="built_in">std</span>::chrono::system_clock::now();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">print</span>) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; name &lt;&lt; <span class="string">" took "</span> &lt;&lt; (after - before).count() &lt;&lt; <span class="string">"ns and "</span> &lt;&lt; <span class="built_in">running</span></span><br><span class="line">              &lt;&lt; <span class="string">" is a value I don't want optimized away"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// We generate all the datasets up front, to keep the effects of the allocator distant</span></span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> together  = make_data&lt;Together&gt;();</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> only_fast = make_data&lt;OnlyFastData&gt;();</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> with_ool  = make_data&lt;WithOOL&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// We run each trial twice, recording the results only the second time. The idea is to give a fair comparison, where</span></span><br><span class="line">  <span class="comment">// all 3 options have their caches primed and nobody thus has data fresher from the allocation.</span></span><br><span class="line">  trial(<span class="string">"With cold data in-line (original)               "</span>, together, <span class="literal">false</span>);</span><br><span class="line">  trial(<span class="string">"With cold data in-line (original)               "</span>, together, <span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">  trial(<span class="string">"With cold data thrown away (best-case scenario) "</span>, only_fast, <span class="literal">false</span>);</span><br><span class="line">  trial(<span class="string">"With cold data thrown away (best-case scenario) "</span>, only_fast, <span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">  trial(<span class="string">"With OutOfLIne                                  "</span>, with_ool, <span class="literal">false</span>);</span><br><span class="line">  trial(<span class="string">"With OutOfLIne                                  "</span>, with_ool, <span class="literal">true</span>);</span><br><span class="line"><span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h4><p>注意map的<code>try_emplace</code>方法是C++17引入的新特性，编译命令如下：<code>g++ benchmark.cpp -o benchmark -std=c++17</code>。在我自己的笔记本上运行的结果如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">With cold data in-line (original)                took 82936589ns and 3350498669 is a value I don&#39;t want optimized away</span><br><span class="line">With cold data thrown away (best-case scenario)  took 74243139ns and 3350498669 is a value I don&#39;t want optimized away</span><br><span class="line">With OutOfLIne                                   took 73445932ns and 3350498669 is a value I don&#39;t want optimized away</span><br></pre></td></tr></table></figure>
+<p>加速效果没有原始博客中的那么大，但付出的成本近乎免费，因此在性能优化时是很值得考虑的一个选项。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/" data-id="cke71smb80000eq79clr7hvia" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Performance-C/" rel="tag">Performance, C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="posts-Python-Pass" class="article article-type-posts" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/08/09/Python-Pass/" class="article-date">
+  <time datetime="2020-08-09T07:00:53.000Z" itemprop="datePublished">2020-08-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/08/09/Python-Pass/">Python_Pass</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Mindspore-Python-Pass"><a href="#Mindspore-Python-Pass" class="headerlink" title="Mindspore Python Pass"></a>Mindspore Python Pass</h1><p>Mindspore的Python Pass特性简单来说就是使能在Python中编写优化器中的pass。现在这一特性的开发将告一段落，简单记录一下。</p>
+<h2 id="PRs"><a href="#PRs" class="headerlink" title="PRs"></a>PRs</h2><ol>
+<li><p><a href="https://gitee.com/mindspore/mindspore/pulls/2478" target="_blank" rel="noopener">基本功能</a></p>
+</li>
+<li><p><a href="https://gitee.com/mindspore/mindspore/pulls/2963" target="_blank" rel="noopener">Python UT支持&amp;用例</a></p>
+</li>
+<li><a href="https://gitee.com/mindspore/mindspore/pulls/3715" target="_blank" rel="noopener">新Pattern表达方式</a></li>
+<li><a href="https://gitee.com/mindspore/mindspore/pulls/4126" target="_blank" rel="noopener">添加Parameter支持</a></li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/08/09/Python-Pass/" data-id="ckdtmyesc00003a79f8it7f7l" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Mindspore-Python-Optimizer-C/" rel="tag">Mindspore, Python, Optimizer, C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Pybind11-classes" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/27/Pybind11-classes/" class="article-date">
+  <time datetime="2020-07-27T06:10:51.000Z" itemprop="datePublished">2020-07-27</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/27/Pybind11-classes/">Pybind11 classes</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Pybind11-class绑定"><a href="#Pybind11-class绑定" class="headerlink" title="Pybind11 class绑定"></a>Pybind11 class绑定</h1><p>最近工作需要用到Pybind11 class绑定中一些较为高级的特性（虚函数、重载、继承），在此整理记录一下。</p>
+<h2 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2><p>class绑定对应<a href="https://omnimilk.github.io/2020/07/27/Pybind11-Type-Conversions/" target="_blank" rel="noopener">上一篇</a>中的第一种场景，即将C++原生类型通过<code>class_</code>函数向Python暴露。下面用一个小例子展示class绑定最基本的用法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pybind11/pybind11.h&gt;</span></span></span><br><span class="line"><span class="keyword">namespace</span> py = pybind11;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Pet</span> &#123;</span></span><br><span class="line">    Pet(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name) : name(name) &#123; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setName</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name_)</span> </span>&#123; name = name_; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;<span class="title">getName</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> name; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">PYBIND11_MODULE(example, m) &#123;</span><br><span class="line">    py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">        .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">        .def(<span class="string">"setName"</span>, &amp;Pet::setName)</span><br><span class="line">        .def(<span class="string">"getName"</span>, &amp;Pet::getName);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的代码向Python暴露了<code>Pet</code>类，其中有三个方法：<code>__init__</code>, <code>setName</code>, <code>getName</code>。</p>
+<h3 id="设置关键字参数和默认参数"><a href="#设置关键字参数和默认参数" class="headerlink" title="设置关键字参数和默认参数"></a>设置关键字参数和默认参数</h3><p>在def函数时可以添加参数的名字及设置默认值。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pybind11/pybind11.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> i, <span class="keyword">int</span> j)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> i + j;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">PYBIND11_MODULE(example, m) &#123;</span><br><span class="line">  <span class="comment">//m.def("add", &amp;add, "A function which adds two numbers");</span></span><br><span class="line">  <span class="comment">// 变为关键字参数</span></span><br><span class="line">  m.def(<span class="string">"add"</span>, &amp;add, <span class="string">"A function which adds two numbers"</span>, py::arg(<span class="string">"i"</span>), py::arg(<span class="string">"j"</span>));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// python调用：example.add(i=1,  j=2)</span></span><br></pre></td></tr></table></figure>
+<p>设置默认值类似（NOTE: C++接口中定义的默认值不会自动捕获，需要bind时设置）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PYBIND11_MODULE(example, m) &#123;</span><br><span class="line">  <span class="comment">// 设置参数默认值</span></span><br><span class="line">  m.def(<span class="string">"add"</span>, &amp;add, <span class="string">"A function which adds two numbers"</span>, py::arg(<span class="string">"i"</span>) = <span class="number">1</span>, py::arg(<span class="string">"j"</span>) = <span class="number">2</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="绑定Lambda函数"><a href="#绑定Lambda函数" class="headerlink" title="绑定Lambda函数"></a>绑定Lambda函数</h3><p>上面的方法绑定是将Python方法绑定到方法指针上，实际上可以用Lambda函数替换。例如，给Pet类增加一个<code>__repr__</code>方法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">    .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">    .def(<span class="string">"setName"</span>, &amp;Pet::setName)</span><br><span class="line">    .def(<span class="string">"getName"</span>, &amp;Pet::getName)</span><br><span class="line">    .def(<span class="string">"__repr__"</span>,</span><br><span class="line">        [](<span class="keyword">const</span> Pet &amp;a) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"&lt;example.Pet named '"</span> + a.name + <span class="string">"'&gt;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    );</span><br></pre></td></tr></table></figure>
+<h3 id="绑定成员变量"><a href="#绑定成员变量" class="headerlink" title="绑定成员变量"></a>绑定成员变量</h3><p>C++中公有成员变量可以绑定为Python中可以读写的attributes（const成员绑定为只读attributes），例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">PYBIND11_MODULE(example, m) &#123;</span><br><span class="line">    py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">        .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">        .def(<span class="string">"setName"</span>, &amp;Pet::setName)</span><br><span class="line">        .def(<span class="string">"getName"</span>, &amp;Pet::getName)</span><br><span class="line">        .def_readwrite(<span class="string">"name"</span>, &amp;Pet::name); <span class="comment">//公有非const成员变量</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Python中调用：</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p = example.Pet("Molly")</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p.name</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p.name = "Charly"</span></span><br></pre></td></tr></table></figure>
+<p>私有成员变量可以通过绑定C++中的getter和setter成为Python中的property：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">  .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">  .def_property(<span class="string">"name"</span>, &amp;Pet::getName, &amp;Pet::setName);</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+<p>类似的方法还有：<code>def_readwrite_static()</code>, <code>def_readonly_static()</code>, <code>def_property_static()</code>, <code>def_property_readonly_static()</code></p>
+<p>NOTE: Python可以动态的添加属性，绑定时也可以使能C++暴露的类在Python中支持动态属性：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// py::dynamic_attr()支持动态属性</span></span><br><span class="line">py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>, py::dynamic_attr())</span><br><span class="line">    .def(py::init&lt;&gt;())</span><br><span class="line">    .def_readwrite(<span class="string">"name"</span>, &amp;Pet::name);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Python中动态向Pet添加属性</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p = example.Pet()</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p.name = "charly"</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p.age = 2 # 动态添加age属性</span></span><br></pre></td></tr></table></figure>
+<h3 id="保持继承关系"><a href="#保持继承关系" class="headerlink" title="保持继承关系"></a>保持继承关系</h3><p>C++中的继承关系有两种方式保留到暴露到Python的类中，下面以一个例子说明。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Pet</span> &#123;</span></span><br><span class="line">    Pet(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name) : name(name) &#123; &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Dog</span> :</span> Pet &#123;</span><br><span class="line">    Dog(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name) : Pet(name) &#123; &#125;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">bark</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> <span class="string">"woof!"</span>; &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>第一种方法是子类暴露时在<code>class_</code>的模板中指定基类</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">   .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">   .def_readwrite(<span class="string">"name"</span>, &amp;Pet::name);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Method 1: template parameter:</span></span><br><span class="line">py::class_&lt;Dog, Pet <span class="comment">/* &lt;- specify C++ parent type */</span>&gt;(m, <span class="string">"Dog"</span>)</span><br><span class="line">    .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">    .def(<span class="string">"bark"</span>, &amp;Dog::bark);</span><br></pre></td></tr></table></figure>
+<p>第二种方法是在子类暴露时在<code>class_</code>的参数中传入基类的<code>class_</code>闭包</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">py::class_&lt;Pet&gt; <span class="title">pet</span><span class="params">(m, <span class="string">"Pet"</span>)</span></span>;</span><br><span class="line">pet.def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">   .def_readwrite(<span class="string">"name"</span>, &amp;Pet::name);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Method 2: pass parent class_ object:</span></span><br><span class="line">py::class_&lt;Dog&gt;(m, <span class="string">"Dog"</span>, pet <span class="comment">/* &lt;- specify Python parent type */</span>)</span><br><span class="line">    .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">    .def(<span class="string">"bark"</span>, &amp;Dog::bark);</span><br></pre></td></tr></table></figure>
+<h3 id="自动向下类型转换（downcasting）"><a href="#自动向下类型转换（downcasting）" class="headerlink" title="自动向下类型转换（downcasting）"></a>自动向下类型转换（downcasting）</h3><p>自动向下类型转换指的是<strong>多态类型</strong>的基类指针形式返回子类对象，此指针被自动识别并转换为子类的指针。需要注意的是，上面的<code>Pet</code>和<code>Dog</code>并不是多态类型，因为<code>Pet</code>中没有定义虚函数。</p>
+<p>下面以<code>Pet</code>和<code>Dog</code>为例展示<strong>没有</strong>自动downcasting时的行为：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 返回指向子类对象的基类指针</span></span><br><span class="line">m.def(<span class="string">"pet_store"</span>, []() &#123; <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Pet&gt;(<span class="keyword">new</span> Dog(<span class="string">"Molly"</span>)); &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 没有自动downcasting时的行为</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p = example.pet_stor()</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; type(p)</span></span><br><span class="line">Pet                                          # 没有被识别为Dog</span><br><span class="line"><span class="comment">// p.bark()</span></span><br><span class="line">AttributeError: 'Pet' object has no attribute 'bark'</span><br></pre></td></tr></table></figure>
+<p>我们可以向<code>Pet</code>中添加一个虚函数来通知Pybind11这种多态关系：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">PolymorphicPet</span> &#123;</span></span><br><span class="line">    <span class="keyword">virtual</span> ~PolymorphicPet() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">PolymorphicDog</span> :</span> PolymorphicPet &#123;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">bark</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> <span class="string">"woof!"</span>; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Same binding code</span></span><br><span class="line">py::class_&lt;PolymorphicPet&gt;(m, <span class="string">"PolymorphicPet"</span>);</span><br><span class="line">py::class_&lt;PolymorphicDog, PolymorphicPet&gt;(m, <span class="string">"PolymorphicDog"</span>)</span><br><span class="line">    .def(py::init&lt;&gt;())</span><br><span class="line">    .def(<span class="string">"bark"</span>, &amp;PolymorphicDog::bark);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Again, return a base pointer to a derived instance</span></span><br><span class="line">m.def(<span class="string">"pet_store2"</span>, []() &#123; <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;PolymorphicPet&gt;(<span class="keyword">new</span> PolymorphicDog); &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Python中调用</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p = example.pet_store2()</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; type(p)</span></span><br><span class="line"><span class="comment">// PolymorphicDog  # automatically downcast</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p.bark()</span></span><br><span class="line"><span class="comment">// u'woof!'</span></span><br></pre></td></tr></table></figure>
+<h3 id="方法重载"><a href="#方法重载" class="headerlink" title="方法重载"></a>方法重载</h3><p>C++中重载的方法直接通过方法名取指针会有歧义，Pybind11有两种方法消除这种歧义。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Pet</span> &#123;</span></span><br><span class="line">    Pet(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name, <span class="keyword">int</span> age) : name(name), age(age) &#123; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">set</span><span class="params">(<span class="keyword">int</span> age_)</span> </span>&#123; age = age_; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">set</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name_)</span> </span>&#123; name = name_; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">    <span class="keyword">int</span> age;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 方法1：指定方法指针类型，C++11+支持</span></span><br><span class="line">py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">   .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;, <span class="keyword">int</span>&gt;())</span><br><span class="line">   .def(<span class="string">"set"</span>, (<span class="keyword">void</span> (Pet::*)(<span class="keyword">int</span>)) &amp;Pet::<span class="built_in">set</span>, <span class="string">"Set the pet's age"</span>)</span><br><span class="line">   .def(<span class="string">"set"</span>, (<span class="keyword">void</span> (Pet::*)(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;)) &amp;Pet::<span class="built_in">set</span>, <span class="string">"Set the pet's name"</span>);</span><br><span class="line"><span class="comment">// 方法2：py::overload_cast自动推导返回值类型， C++14+支持</span></span><br><span class="line">py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">    .def(<span class="string">"set"</span>, py::overload_cast&lt;<span class="keyword">int</span>&gt;(&amp;Pet::<span class="built_in">set</span>), <span class="string">"Set the pet's age"</span>)</span><br><span class="line">    .def(<span class="string">"set"</span>, py::overload_cast&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;(&amp;Pet::<span class="built_in">set</span>), <span class="string">"Set the pet's name"</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="枚举类型"><a href="#枚举类型" class="headerlink" title="枚举类型"></a>枚举类型</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Pet</span> &#123;</span></span><br><span class="line">    <span class="keyword">enum</span> Kind &#123;</span><br><span class="line">        Dog = <span class="number">0</span>,</span><br><span class="line">        Cat</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    Pet(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name, Kind type) : name(name), type(type) &#123; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">    Kind type;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">py::class_&lt;Pet&gt; <span class="title">pet</span><span class="params">(m, <span class="string">"Pet"</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">pet.def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;, Pet::Kind&gt;())</span><br><span class="line">    .def_readwrite(<span class="string">"name"</span>, &amp;Pet::name)</span><br><span class="line">    .def_readwrite(<span class="string">"type"</span>, &amp;Pet::type);</span><br><span class="line"></span><br><span class="line">py::enum_&lt;Pet::Kind&gt;(pet, <span class="string">"Kind"</span>)</span><br><span class="line">    .value(<span class="string">"Dog"</span>, Pet::Kind::Dog)</span><br><span class="line">    .value(<span class="string">"Cat"</span>, Pet::Kind::Cat)</span><br><span class="line">    .export_values();</span><br><span class="line"></span><br><span class="line"><span class="comment">// Python 调用：</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p = Pet('Lucy', Pet.Cat)</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p.type</span></span><br><span class="line"><span class="comment">// Kind.Cat</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; int(p.type)</span></span><br><span class="line"><span class="comment">// 1L</span></span><br></pre></td></tr></table></figure>
+<h2 id="高级特性"><a href="#高级特性" class="headerlink" title="高级特性"></a>高级特性</h2><h3 id="覆写虚函数"><a href="#覆写虚函数" class="headerlink" title="覆写虚函数"></a>覆写虚函数</h3><p>直接以例子来说明：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Animal</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> ~Animal() &#123; &#125;</span><br><span class="line">    <span class="comment">// 纯虚函数， 有纯虚函数的类无法实例化， 因此无法定义构造函数</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span> :</span> <span class="keyword">public</span> Animal &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> <span class="keyword">override</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> result;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;n_times; ++i)</span><br><span class="line">            result += <span class="string">"woof! "</span>;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 传入基类指针，调用实际对象的go方法</span></span><br><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">call_go</span><span class="params">(Animal *animal)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> animal-&gt;go(<span class="number">3</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Bad binding! 无法扩展，因为此处Animal类没有构造函数</span></span><br><span class="line">PYBIND11_MODULE(example, m) &#123;</span><br><span class="line">    py::class_&lt;Animal&gt;(m, <span class="string">"Animal"</span>)</span><br><span class="line">        .def(<span class="string">"go"</span>, &amp;Animal::go);</span><br><span class="line"></span><br><span class="line">    py::class_&lt;Dog, Animal&gt;(m, <span class="string">"Dog"</span>)</span><br><span class="line">        .def(py::init&lt;&gt;());</span><br><span class="line"></span><br><span class="line">    m.def(<span class="string">"call_go"</span>, &amp;call_go);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以在C++中新增一个跳转类来解决上述问题</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PyAnimal</span> :</span> <span class="keyword">public</span> Animal &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">/* Inherit the constructors */</span></span><br><span class="line">    <span class="keyword">using</span> Animal::Animal;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Trampoline (need one for each virtual function) */</span></span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> <span class="keyword">override</span> </span>&#123;</span><br><span class="line">        <span class="comment">/* 对纯虚函数使用此宏 */</span></span><br><span class="line">        <span class="comment">/* 对有默认实现的虚函数，使用PYBIND11_OVERLOAD*/</span></span><br><span class="line">        PYBIND11_OVERLOAD_PURE(</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">string</span>, <span class="comment">/* Return type */</span></span><br><span class="line">            Animal,      <span class="comment">/* Parent class */</span></span><br><span class="line">            go,          <span class="comment">/* Name of function in C++ (must match Python name) */</span></span><br><span class="line">            n_times      <span class="comment">/* Argument(s) */</span></span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">PYBIND11_MODULE(example, m) &#123;</span><br><span class="line">    py::class_&lt;Animal, PyAnimal <span class="comment">/* &lt;--- trampoline*/</span>&gt;(m, <span class="string">"Animal"</span>)</span><br><span class="line">        .def(py::init&lt;&gt;())</span><br><span class="line">        .def(<span class="string">"go"</span>, &amp;Animal::go);</span><br><span class="line"></span><br><span class="line">    py::class_&lt;Dog, Animal&gt;(m, <span class="string">"Dog"</span>)</span><br><span class="line">        .def(py::init&lt;&gt;());</span><br><span class="line"></span><br><span class="line">    m.def(<span class="string">"call_go"</span>, &amp;call_go);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">Python中进行扩展和调用：</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; from example import *</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; d = Dog()</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; call_go(d)</span></span><br><span class="line"><span class="comment">u'woof! woof! woof! '</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; class Cat(Animal):</span></span><br><span class="line"><span class="comment">...     def go(self, n_times):</span></span><br><span class="line"><span class="comment">...             return "meow! " * n_times</span></span><br><span class="line"><span class="comment">...</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; class Dachshund(Dog):</span></span><br><span class="line"><span class="comment">...        def __init__(self, name):</span></span><br><span class="line"><span class="comment">...            Dog.__init__(self) # init c++ part</span></span><br><span class="line"><span class="comment">...            self.name = name</span></span><br><span class="line"><span class="comment">...        def bark(self):</span></span><br><span class="line"><span class="comment">...            return "yap!"</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; c = Cat()</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; call_go(c)</span></span><br><span class="line"><span class="comment">u'meow! meow! meow! '</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>NOTE: 用Python类扩展C++暴露出来的类时，不要使用<code>super()</code>, 不要使用<code>super()</code>, 不要使用<code>super()</code>! 应该直接使用对应类的<code>__init__</code>方法， 因为Python的方法解析顺序（MRO）和C++不一致。</p>
+<h3 id="绑定虚函数和继承"><a href="#绑定虚函数和继承" class="headerlink" title="绑定虚函数和继承"></a>绑定虚函数和继承</h3><p>继续直接从例子开始</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Animal</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">name</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> <span class="string">"unknown"</span>; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span> :</span> <span class="keyword">public</span> Animal &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> <span class="keyword">override</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> result;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;n_times; ++i)</span><br><span class="line">            result += bark() + <span class="string">" "</span>;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">bark</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> <span class="string">"woof!"</span>; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义两个跳转类， 覆写虚函数</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PyAnimal</span> :</span> <span class="keyword">public</span> Animal &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">using</span> Animal::Animal; <span class="comment">// Inherit constructors</span></span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> <span class="keyword">override</span> </span>&#123; PYBIND11_OVERLOAD_PURE(<span class="built_in">std</span>::<span class="built_in">string</span>, Animal, go, n_times); &#125;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">name</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123; PYBIND11_OVERLOAD(<span class="built_in">std</span>::<span class="built_in">string</span>, Animal, name, ); &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PyDog</span> :</span> <span class="keyword">public</span> Dog &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">using</span> Dog::Dog; <span class="comment">// Inherit constructors</span></span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> <span class="keyword">override</span> </span>&#123; PYBIND11_OVERLOAD(<span class="built_in">std</span>::<span class="built_in">string</span>, Dog, go, n_times); &#125;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">name</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123; PYBIND11_OVERLOAD(<span class="built_in">std</span>::<span class="built_in">string</span>, Dog, name, ); &#125;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">bark</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123; PYBIND11_OVERLOAD(<span class="built_in">std</span>::<span class="built_in">string</span>, Dog, bark, ); &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>NOTE: 上面通过pybind11注册过的类的子类都需要定义跳转类来覆写父类中的虚函数，当子类较多或者虚函数较多时，可以使用模板类来避免大量重复代码（参考<a href="https://pybind11.readthedocs.io/en/stable/advanced/classes.html#combining-virtual-functions-and-inheritance" target="_blank" rel="noopener">这里</a>）。</p>
+<h3 id="绑定自定义构造函数"><a href="#绑定自定义构造函数" class="headerlink" title="绑定自定义构造函数"></a>绑定自定义构造函数</h3><p>使用<code>py::init&lt;Args, ...&gt;()</code>或者<code>py::init_alias&lt;Args, ...&gt;()</code>绑定构造函数较方便，但有时我们需要绑定自定义的方法作为构造函数（例如：工厂方法，单例获取静态方法）。</p>
+<p>下面的代码展示多种将C++方法绑定为Python构造函数的途径：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Example</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    Example(<span class="keyword">int</span>); <span class="comment">// private constructor</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// Factory function - returned by value:</span></span><br><span class="line">    <span class="function"><span class="keyword">static</span> Example <span class="title">create</span><span class="params">(<span class="keyword">int</span> a)</span> </span>&#123; <span class="keyword">return</span> Example(a); &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// These constructors are publicly callable:</span></span><br><span class="line">    Example(<span class="keyword">double</span>);</span><br><span class="line">    Example(<span class="keyword">int</span>, <span class="keyword">int</span>);</span><br><span class="line">    Example(<span class="built_in">std</span>::<span class="built_in">string</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">py::class_&lt;Example&gt;(m, <span class="string">"Example"</span>)</span><br><span class="line">    <span class="comment">// Bind the factory function as a constructor:</span></span><br><span class="line">    .def(py::init(&amp;Example::create))</span><br><span class="line">    <span class="comment">// Bind a lambda function returning a pointer wrapped in a holder:</span></span><br><span class="line">    .def(py::init([](<span class="built_in">std</span>::<span class="built_in">string</span> arg) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Example&gt;(<span class="keyword">new</span> Example(arg));</span><br><span class="line">    &#125;))</span><br><span class="line">    <span class="comment">// Return a raw pointer:</span></span><br><span class="line">    .def(py::init([](<span class="keyword">int</span> a, <span class="keyword">int</span> b) &#123; <span class="keyword">return</span> <span class="keyword">new</span> Example(a, b); &#125;))</span><br><span class="line">    <span class="comment">// You can mix the above with regular C++ constructor bindings as well:</span></span><br><span class="line">    .def(py::init&lt;<span class="keyword">double</span>&gt;())</span><br><span class="line">    ;</span><br></pre></td></tr></table></figure>
+<h4 id="有虚函数跳转类的构造函数"><a href="#有虚函数跳转类的构造函数" class="headerlink" title="有虚函数跳转类的构造函数"></a>有虚函数跳转类的构造函数</h4><p>两种方法：</p>
+<ol>
+<li>以右值引用的方式将基类值传给子类构造函数</li>
+<li>向<code>py::init&lt;&gt;</code>提供两个工厂函数，第一个在不需要子类时调（即暴露的类只在Python中被使用而没有被继承），第二个在需要子类时被调用</li>
+</ol>
+<p>两种方式的demo如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pybind11/factory.h&gt;</span></span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Example</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">virtual</span> ~Example() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PyExample</span> :</span> <span class="keyword">public</span> Example &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">using</span> Example::Example;</span><br><span class="line">    <span class="comment">// 第一种方式：跳转类以右值引用方式接收基类</span></span><br><span class="line">    PyExample(Example &amp;&amp;base) : Example(<span class="built_in">std</span>::<span class="built_in">move</span>(base)) &#123;&#125;</span><br><span class="line">&#125;;</span><br><span class="line">py::class_&lt;Example, PyExample&gt;(m, <span class="string">"Example"</span>)</span><br><span class="line">    <span class="comment">// Returns an Example pointer.  If a PyExample is needed, the Example instance will be moved via the extra constructor in PyExample, above.</span></span><br><span class="line">    .def(py::init([]() &#123; <span class="keyword">return</span> <span class="keyword">new</span> Example(); &#125;))</span><br><span class="line">    <span class="comment">// 第二种方式：提供两个工厂函数</span></span><br><span class="line">    .def(py::init([]() &#123; <span class="keyword">return</span> <span class="keyword">new</span> Example(); &#125; <span class="comment">/* no alias needed */</span>,</span><br><span class="line">                  []() &#123; <span class="keyword">return</span> <span class="keyword">new</span> PyExample(); &#125; <span class="comment">/* alias needed */</span>))</span><br><span class="line">    <span class="comment">// *Always* returns an alias instance (like py::init_alias&lt;&gt;())</span></span><br><span class="line">    .def(py::init([]() &#123; <span class="keyword">return</span> <span class="keyword">new</span> PyExample(); &#125;))</span><br><span class="line">    ;</span><br></pre></td></tr></table></figure>
+<h3 id="多重继承"><a href="#多重继承" class="headerlink" title="多重继承"></a>多重继承</h3><p>在<code>class_</code>的模板参数中指定所有的基类即可：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">py::class_ &lt;MyType, BaseType1, BaseType2, BaseType3&gt;(m, <span class="string">"MyType"</span>)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/27/Pybind11-classes/" data-id="ckd4gbd630000yz792p1w7hk5" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Pybind11-Type-Conversions" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/27/Pybind11-Type-Conversions/" class="article-date">
+  <time datetime="2020-07-27T02:17:43.000Z" itemprop="datePublished">2020-07-27</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/27/Pybind11-Type-Conversions/">Pybind11 Type Conversions</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Pybind11类型转换"><a href="#Pybind11类型转换" class="headerlink" title="Pybind11类型转换"></a>Pybind11类型转换</h1><p>Pybind11帮助我们方便的实现C++和Python之间的调用，无论是相互的接口暴露还是数据传递都要求我们正确的在C++和Python类型之间进行转换（<a href="https://pybind11.readthedocs.io/en/stable/advanced/cast/overview.html" target="_blank" rel="noopener">官方文档</a>）。</p>
+<h2 id="三种场景"><a href="#三种场景" class="headerlink" title="三种场景"></a>三种场景</h2><ol>
+<li>C++原生类型暴露给python</li>
+<li>Python原生类型暴露给C++</li>
+<li>C++和Python原生类型间相互转换</li>
+</ol>
+<h2 id="C-原生类型暴露给Python"><a href="#C-原生类型暴露给Python" class="headerlink" title="C++原生类型暴露给Python"></a>C++原生类型暴露给Python</h2><p>使用<code>py::class_</code>将自定义的C++类型暴露给Python（<a href="https://pybind11.readthedocs.io/en/stable/classes.html" target="_blank" rel="noopener">参考这里</a>）。C++类型传递给Python时会在原生C++类型外加一层wrapper，从Python取回时只用去掉wrapper即可。</p>
+<h2 id="Python原生类型暴露给C"><a href="#Python原生类型暴露给C" class="headerlink" title="Python原生类型暴露给C++"></a>Python原生类型暴露给C++</h2><p>在C++中取用Python的原生类型（例如：<code>tuple</code>、<code>list</code>），例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// C++中使用Python对象</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">print_list</span><span class="params">(py::<span class="built_in">list</span> my_list)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> item : my_list) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; item &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Python中传入Python对象给C++:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>print_list([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br><span class="line"><span class="number">1</span> <span class="number">2</span> <span class="number">3</span></span><br></pre></td></tr></table></figure>
+<p>这个例子里Python中的<code>list</code>类型没有进行任何转换，只是被封装进了C++的<code>py::list</code>类中。目前Pybind11支持以下类型(<a href="https://pybind11.readthedocs.io/en/stable/advanced/pycpp" target="_blank" rel="noopener">参考这里</a>)：<code>handle</code>, <code>object</code>, <code>bool_</code>, <code>int_</code>, <code>float_</code>, <code>str</code>, <code>bytes</code>, <code>tuple</code>, <code>list</code>, <code>dict</code>, <code>slice</code>, <code>none</code>, <code>capsule</code>, <code>iterable</code>, <code>iterator</code>, <code>function</code>, <code>buffer</code>, <code>array</code>, <code>array_t</code>。</p>
+<h2 id="C-和Python原生类型间相互转换"><a href="#C-和Python原生类型间相互转换" class="headerlink" title="C++和Python原生类型间相互转换"></a>C++和Python原生类型间相互转换</h2><p>有些场景C++和Python都用的是各自的原生类型，Pybind11支持常见C++原生类型和Python原生类型间的相互转换，例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">print_vector</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;v)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> item : v) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; item &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Python中调用：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; print_vector([1, 2, 3])</span><br><span class="line">1 2 3</span><br></pre></td></tr></table></figure>
+<p>容易注意到Python中传入的为<code>list</code>类型，而C++中处理的类型为<code>const std::vector&lt;int&gt; &amp;</code>。Pybind11这种默认类型转换会在原生类型间拷贝数据，例如上面Python中的调用会首先将list中的数据拷贝到一个<code>std::vector&lt;int&gt;</code>中，然后进行C++中的调用。</p>
+<p>NOTE: 默认的拷贝可能开销很大，可以通过手写<a href="https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#opaque" target="_blank" rel="noopener">opaque types</a>重载类型转换的wrapper来避免不必要的拷贝。opaque types还没有使用过，有机会单独挖坑写。</p>
+<h2 id="STL库"><a href="#STL库" class="headerlink" title="STL库"></a>STL库</h2><p>Pybind11默认（<code>pybind11/pybind11.h</code>）支持<code>std::pair&lt;&gt;</code>，<code>std::tuple&lt;&gt;</code>和<code>list</code>, <code>set</code>, <code>dict</code>之间的自动转换。引入<code>pybind11/stl.h</code>可以新增<code>std::vector&lt;&gt;</code>, <code>std::deque&lt;&gt;</code>, <code>std::list&lt;&gt;</code>, <code>std::array&lt;&gt;</code>, <code>std::set&lt;&gt;</code>, <code>std::unordered_set&lt;&gt;</code>, <code>std::map&lt;&gt;</code>和<code>std::unordered_map&lt;&gt;</code>的与Python的自动转换。</p>
+<h3 id="绑定STL容器"><a href="#绑定STL容器" class="headerlink" title="绑定STL容器"></a>绑定STL容器</h3><p><code>pybind11/stl_bind.h</code>可以帮助我们将STL容器作为原生对象暴露出来。例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pybind11/stl_bind.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">PYBIND11_MAKE_OPAQUE(<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;);</span><br><span class="line">PYBIND11_MAKE_OPAQUE(<span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>, <span class="keyword">double</span>&gt;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 绑定</span></span><br><span class="line">py::bind_vector&lt;<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;(m, <span class="string">"VectorInt"</span>);</span><br><span class="line">py::bind_map&lt;<span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>, <span class="keyword">double</span>&gt;&gt;(m, <span class="string">"MapStringDouble"</span>);</span><br><span class="line"><span class="comment">// 或者同时设置绑定的作用域</span></span><br><span class="line">py::bind_vector&lt;<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;(m, <span class="string">"VectorInt"</span>, py::module_local(<span class="literal">false</span>));</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/27/Pybind11-Type-Conversions/" data-id="ckd3zdaqx00000d79hxtz43ip" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Bonfire" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/26/Bonfire/" class="article-date">
+  <time datetime="2020-07-26T03:46:59.000Z" itemprop="datePublished">2020-07-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/26/Bonfire/">Bonfire</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Bonfire"><a href="#Bonfire" class="headerlink" title="Bonfire"></a>Bonfire</h1><p>Cannot move my eyes away from the bonfire</p>
+<p>It was his will</p>
+<p>It is a dance of life and death</p>
+<p>It would be ashes of bodies</p>
+<p>It is not an illusion as long as it burns</p>
+<p>But I had stared at it for too long</p>
+<p>So I lit my hand</p>
+<p>And walked into the dark</p>
+<p>As my lights going dimmer and dimmer</p>
+<p>How I wish it is a cool autumn</p>
+<p>I would just fall down on the ground</p>
+<p>And flare up the whole forest</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/26/Bonfire/" data-id="ckd2kgi660000c67975gd8ml8" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Mood/" rel="tag">Mood</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Tensorflow-Graph-Matcher" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/20/Tensorflow-Graph-Matcher/" class="article-date">
+  <time datetime="2020-07-20T01:34:12.000Z" itemprop="datePublished">2020-07-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/AI/">AI</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/20/Tensorflow-Graph-Matcher/">Tensorflow graph_matcher</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="TF-graph-matcher用法及源码探究"><a href="#TF-graph-matcher用法及源码探究" class="headerlink" title="TF graph_matcher用法及源码探究"></a>TF graph_matcher用法及源码探究</h1><p><code>graph_matcher</code>是<code>tensorflow.contrib</code>中量化模块（<code>quantize</code>）的一个子模块，用于在计算图中描述和匹配特定的模式。配合对模式匹配后的处理，可以在python层面实现计算图的pass。</p>
+<h2 id="用法-以Conv-BN融合为例"><a href="#用法-以Conv-BN融合为例" class="headerlink" title="用法: 以Conv + BN融合为例"></a>用法: 以Conv + BN融合为例</h2><p>Conv+BN是CNN网络中常见的组合。如果我们观察两者的计算公式，可以发现两者可以融合为一个算子达到运行加速的效果（实质上，Conv计算上等价于MatMul，所以融合也适用于FC+BN等组合）。</p>
+<h3 id="融合原理"><a href="#融合原理" class="headerlink" title="融合原理"></a>融合原理</h3><p>首先，分别观察Conv和BN的计算公式：</p>
+<p>​    Conv的计算公式：$z = w * x + b$</p>
+<p>​    BN的计算公式：$y = \frac{(z - \mu_B) * \gamma}{ \sigma_B} + \beta$</p>
+<p>实际上，我们可以通过更新Conv的<code>weight</code>和<code>bias</code>直接在Conv中完成Conv + BN所需完成的计算。略去推导，直接给出新的<code>weight</code>和<code>bias</code>的计算公式如下：</p>
+<p>​    $w^{\prime} = \frac{w * \gamma}{\sigma_B}$, $b^{\prime} = \frac{(b - \mu_B)\gamma}{\sigma_B} + \beta$</p>
+<p>代入新的$w^{‘}$和$b^{‘}$，容易验证新的Conv计算等价于Conv + BN:</p>
+<script type="math/tex; mode=display">
+\begin{align}
+z^{\prime} &= w^{\prime} * x + b^{\prime} \\
+          &= \frac{w * \gamma * x}{\sigma_B} +\frac{(b - \mu_B) * \gamma} {\sigma_B} + \beta \\
+          &=\frac{\gamma(w*x + b - \mu_B)}{\sigma_B} + \beta \\
+          &=\frac{(z - \mu_B) * \gamma}{\sigma_B} + \beta = y
+\end{align}</script><h3 id="graph-matcher实现"><a href="#graph-matcher实现" class="headerlink" title="graph_matcher实现"></a>graph_matcher实现</h3><p><code>tensorflow.contrib.quantize.python</code>中包含了Conv + BN融合的<a href="https://github.com/tensorflow/tensorflow/blob/590d6eef7e91a6a7392c8ffffb7b58f2e0c8bc6b/tensorflow/contrib/quantize/python/fold_batch_norms.py#L151-L205" target="_blank" rel="noopener">实现</a>，完整的代码较长，我们重点关注其中对Conv+BN模式描述的部分。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_FindFusedBatchNorms</span><span class="params">(graph)</span>:</span></span><br><span class="line">    <span class="string">"""Finds all ops and tensors related to found FusedBatchNorms.</span></span><br><span class="line"><span class="string">    	Args:</span></span><br><span class="line"><span class="string">    		graph: Graph to inspect.</span></span><br><span class="line"><span class="string">    	Returns:</span></span><br><span class="line"><span class="string">    		_FusedBatchNormMatches.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    input_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    weight_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    gamma_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    beta_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    mean_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    variance_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    </span><br><span class="line">    moving_average_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    bn_decay_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    layer_pattern = graph_matcher.OpTypePattern(<span class="string">'Conv2D|DepthwiseConv2dNative|MatMul'</span>, inputs=[input_pattern, weight_pattern])</span><br><span class="line">    ...</span><br><span class="line">    layer_output_pattern = graph_matcher.OneofPattern([layer_pattern_with_identity, layer_pattern, batch_to_space_pattern])</span><br><span class="line">    ...</span><br><span class="line">    bn_matcher = graph_matcher.GraphMatcher(graph_matcher.OneofPattern([matmul_bn_output_reshape_pattern, batch_norm_pattern]))</span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_GetLayerMatch</span><span class="params">(match_result)</span>:</span></span><br><span class="line">        <span class="string">"""Populates a layer match object containing ops/tensors for folding BNs.</span></span><br><span class="line"><span class="string">        Args:</span></span><br><span class="line"><span class="string">        	match_result: Matched result from graph matcher</span></span><br><span class="line"><span class="string">        Returns:</span></span><br><span class="line"><span class="string">        	layer_op: Matching conv/fc op prior to batch norm</span></span><br><span class="line"><span class="string">        	BatchNormMatch: _BatchNormMatch containing all required batch norm parameters.</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        ...</span><br><span class="line">    layer_matches = []</span><br><span class="line">    matched_layer_set = set()</span><br><span class="line">    <span class="keyword">for</span> match_result <span class="keyword">in</span> bn_identity_matcher.match_graph(graph):</span><br><span class="line">        layer_op, layer_match = _GetLayerMatch(match_result)</span><br><span class="line">        <span class="keyword">if</span> layer_op <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">if</span> layer_op <span class="keyword">not</span> <span class="keyword">in</span> matched_layer_set:</span><br><span class="line">                matched_layer_set.add(layer_op)</span><br><span class="line">                layer_matches.append(layer_match)</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> layer_matches</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_FoldFusedBatchNorms</span><span class="params">(graph, is_training, freeze_batch_norm_delay)</span>:</span></span><br><span class="line">    <span class="string">"""Finds fused batch norm layers and folds them into preceding layers.</span></span><br><span class="line"><span class="string">    Folding only affects the following layers: Conv2D, fully connected, depthwise convolution.</span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">    	graph: Graph to walk and modify.</span></span><br><span class="line"><span class="string">    	is_training: Bool, true if training.</span></span><br><span class="line"><span class="string">    	freeze_batch_norm_delay: How many steps to wait before freezing moving mean</span></span><br><span class="line"><span class="string">      and variance and using them for batch normalization.</span></span><br><span class="line"><span class="string">  Raises:</span></span><br><span class="line"><span class="string">  	ValueError: When batch norm folding fails.</span></span><br><span class="line"><span class="string">  	"""</span></span><br><span class="line">    <span class="keyword">for</span> match <span class="keyword">in</span> _FindFusedBatchNorms(graph):</span><br><span class="line">        scope, sep, _ = match.layer_op.name.rpartition(<span class="string">'/'</span>)</span><br><span class="line">        <span class="keyword">with</span> graph.as_default(), graph.name_scope(scope + sep):</span><br><span class="line">            <span class="keyword">with</span> graph.name_scope(scope + sep + <span class="string">'BatchNorm_Fold'</span> + sep):</span><br><span class="line">                <span class="comment"># new weights = old weights * gamma / sqrt(variance + epsilon)</span></span><br><span class="line">                <span class="comment"># new biases = -mean * gamma / sqrt(variance + epsilon) + beta</span></span><br><span class="line">                multiplier_tensor = match.gamma_tensor * math_ops.rsqrt(match.variance_tensor + match.bn_op.get_attr(<span class="string">'epsilon'</span>))</span><br><span class="line">                bias_tensor = math_ops.subtract(match.beta_tensor, match.mean_tensor * multiplier_tensor, name=<span class="string">'bias'</span>)</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<h4 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h4><p>使用<code>GraphMatcher</code>进行pattern描述、匹配、替换主要分为以下几步：</p>
+<ol>
+<li>使用<code>OpTypePattern</code>及<code>OneofPattern</code>（语法糖）自底向上构建目标pattern</li>
+<li>用目标pattern构造<code>GraphMatcher</code></li>
+<li>向<code>GraphMatcher</code>的<code>match_graph</code>方法传入要匹配的图，获得<code>match_result</code></li>
+<li>从<code>match_result</code>中取出需要复用的pattern中的节点，构造新的节点替换pattern</li>
+</ol>
+<h2 id="graph-matcher实现-1"><a href="#graph-matcher实现-1" class="headerlink" title="graph_matcher实现"></a>graph_matcher实现</h2><p>graph_matcher的<a href="https://github.com/rockchip-linux/tensorflow/blob/master/tensorflow/contrib/quantize/python/graph_matcher.py" target="_blank" rel="noopener">实现</a>主要包括三个部分：<code>Pattern</code>, <code>GraphMatcher</code>, <code>MatchResult</code>。</p>
+<h3 id="Pattern实现"><a href="#Pattern实现" class="headerlink" title="Pattern实现"></a>Pattern实现</h3><p>Pattern作为一个抽象类，要求子类必须实现<code>match</code>方法。<code>match</code>方法接收两个参数：<code>op</code>；<code>tensor</code>。</p>
+<p>Pattern类有两个子类：<code>OpTypePattern</code>类可以限定节点的类型、输入，可以描述一个类型树；<code>Oneof</code></p>
+<p><code>Pattern</code>作为语法糖用于描述one-of关系，也就是匹配输入多个子模式之一即可。</p>
+<p>NOTE: 当前实现了的模式中，<code>match</code>方法中的<code>tensor</code>只是占位用，没有实际使用到。</p>
+<h4 id="OpTypePattern"><a href="#OpTypePattern" class="headerlink" title="OpTypePattern"></a>OpTypePattern</h4><p>构造函数（<code>def __init__(self, op_type, name=None, inputs=None, ordered_inputs=True)</code>）通过限定节点的类型、输入来描述一个类型树；对应的，<code>match</code>中也会递归地对输入节点调用<code>match</code>函数。NOTE: <code>OpType</code>的匹配是使用字符串来完成的。</p>
+<h3 id="MatchResult"><a href="#MatchResult" class="headerlink" title="MatchResult"></a>MatchResult</h3><p>保存match的结果，可以从<code>Pattern</code>实例映射到对应的匹配到的<code>op</code>和<code>tensor</code>。</p>
+<h3 id="GraphMatcher"><a href="#GraphMatcher" class="headerlink" title="GraphMatcher"></a>GraphMatcher</h3><p><code>GraphMatcher</code>中会保存一个pattern，提供方法来检验输入的<code>op</code>或者<code>graph</code>是否和<code>pattern</code>匹配，主要方法有：</p>
+<ol>
+<li>match_op</li>
+<li>match_ops</li>
+<li>match_graph</li>
+</ol>
+<h2 id="拓展思考"><a href="#拓展思考" class="headerlink" title="拓展思考"></a>拓展思考</h2><p><code>TensorFlow</code>中能够轻松的在python中操作图主要得益于图数据结构对python的暴露。当前MindSpore要在python中支持图pass(图中模式的匹配和替换)，可以对比两种思路：</p>
+<ol>
+<li>python向C++注册pass，python中对模式和要替换的目标进行描述，C++中运行pass<ol>
+<li>优点：可以复用部分优化器部分的代码；执行效率较高</li>
+<li>缺点：python pass中的pattern、target与C++通信较复杂</li>
+</ol>
+</li>
+<li>C++向python暴露图接口，直接在python中完成改图<ol>
+<li>优点：对图修改的逻辑全部包含在python中</li>
+<li>缺点：效率较低，但此类任务通常较低频，性能要求不高</li>
+</ol>
+</li>
+</ol>
+<p>综合考虑，C++新增向python暴露图接口，直接在python中完成改图较合理。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/20/Tensorflow-Graph-Matcher/" data-id="ckcugunuv00003s79coth05ko" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TensorFlow-Deep-Learning/" rel="tag">TensorFlow, Deep Learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-SNN-5-LCA" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/07/SNN-5-LCA/" class="article-date">
+  <time datetime="2020-07-07T02:25:56.000Z" itemprop="datePublished">2020-07-07</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/AI/">AI</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/07/SNN-5-LCA/">SNN[5]: LCA</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="SNN学习笔记5：LCA"><a href="#SNN学习笔记5：LCA" class="headerlink" title="SNN学习笔记5：LCA"></a>SNN学习笔记5：LCA</h1><h2 id="稀疏编码"><a href="#稀疏编码" class="headerlink" title="稀疏编码"></a>稀疏编码</h2><p>实验表明人脑对于外界刺激采取一种稀疏的内在表示，例如自然图像只需要用<a href="https://en.wikipedia.org/wiki/Sparse_dictionary_learning" target="_blank" rel="noopener">稀疏词典</a>中一个很小的子集及合适的对应系数来进行稀疏近似（sparse approximation）。</p>
+<h3 id="稀疏近似"><a href="#稀疏近似" class="headerlink" title="稀疏近似"></a>稀疏近似</h3><p>稀疏近似的数学表述如下：</p>
+<p>​    给定一个N维刺激$s \in \mathbb{R}^N$, 找到一个基于由M个向量$\{\phi_m\}$组成的词典$D$的表示。当词典$D$是overcomplete时（i.e M &gt; N），我们可以有无穷多种方式来选取词典中向量对应的稀疏$\{a_m\}$ 来表示$s$: $s = \sum_{m = 1}^Ma_m\phi_m$。</p>
+<p>在最优稀疏近似中，我们希望尽可能少的使用D中的向量，也就是<strong>系数不为0的向量尽可能的少</strong>：</p>
+<script type="math/tex; mode=display">
+\mathop{min}_a ||a||_0    s.t.    s = \sum_{m = 1}^Ma_m\phi_m</script><p>上式中$||a||_0$表示$\ell^0$ norm, 也就是 $a = [a_1, a_2, …, a_M]$中非零元素的个数。需要注意的是，这个组合优化问题是NP-hard的。</p>
+<h3 id="Basis-Pursuit目标"><a href="#Basis-Pursuit目标" class="headerlink" title="Basis Pursuit目标"></a>Basis Pursuit目标</h3><p>对$\ell_0$的优化是NP-hard的，BP目标函数尝试将优化目标改为最小化系数向量的$\ell_1$ norm：</p>
+<script type="math/tex; mode=display">
+\mathop{min}_a ||a||_1    s.t.    s = \sum_{m = 1}^Ma_m\phi_m</script><p>BP目标函数在信号$s$相对稀疏时也可以得到最优稀疏近似。</p>
+<h3 id="BPDN：重建误差"><a href="#BPDN：重建误差" class="headerlink" title="BPDN：重建误差"></a>BPDN：重建误差</h3><p>实际操作中，由于$s$中存在噪音，我们不应该要求完美重建。BPDN（Basis Pursuit De-Noising）目标函数在BP的基础上引入了MSE重建误差来平衡正则项与重建精度：</p>
+<script type="math/tex; mode=display">
+\mathop{min}_a (||s - \sum_{m = 1}^Ma_m\phi_m||_2^2 + \lambda||a||_1)</script><p>公式中的$\lambda$正是用来权衡重建误差与正则项的。</p>
+<h4 id="MP算法"><a href="#MP算法" class="headerlink" title="MP算法"></a>MP算法</h4><p>在信号处理社区，常用MP(Matching Pursuit)算法来求解BPDN。MPs算法本质上是一种贪心算法，流程如下：</p>
+<ol>
+<li>将残差初始化为$s$: $r_0 = s$</li>
+<li>在第k次迭代，通过$\theta_k = argmax_m|\langle r_{k-1}, \phi_m\rangle|$找到词典M中的索引$\theta_k$</li>
+<li>更新残差：$r_k = r_{k - 1} - \phi_{\theta_k}d_k$</li>
+</ol>
+<p>K次迭代后得到一个$s$的稀疏近似：$\hat{s} = \sum_{k = 1}^K \phi_{\theta_k}d_k$。</p>
+<h2 id="LCA"><a href="#LCA" class="headerlink" title="LCA"></a>LCA</h2><p><a href="https://ece.rice.edu/~eld1/papers/Rozell08.pdf" target="_blank" rel="noopener">LCA</a>(Locally Competitive Algorithm)是一种稀疏编码算法，相比MP算法，不仅考虑到了选取最稀疏表示的目标，也考虑了选取最能表征信号特性的向量的目标。同时，LCA对随时间变化的信号的处理进行了优化，LCA不用每一步都从头进行稀疏近似，而是基于上一步的表征向量进行更新。</p>
+<h3 id="框架"><a href="#框架" class="headerlink" title="框架"></a>框架</h3><p>LCA中，词典中的每个向量$\phi_m \in D$都被关联到一个神经元。神经元中维护自己的膜电位$u_m(t)$，神经元的输入电流为输入与神经元的感受野的匹配度：$b_m(t) = \langle\phi_m, s(t)\rangle$。当神经元m的膜电位超过阈值$\lambda $时，输出一个激活信号$a_m = T_\lambda(u_m)$并向周边神经元n发射抑制信号$a_mG_{m, n}$其中$ G_{m, n} = \langle \phi_m, \phi_n \rangle$。</p>
+<p>NOTE: 从抑制信号的公式中可以看出，一个神经元的激活越强，对周边神经元的抑制越强；一个神经元与周围的神经元越相似，对周围神经元的抑制越强。这种机制会导致匹配度最高的神经元得到最大的电流输入，然后抑制周边神经元得到输入及进行反向抑制，以此达到获取<strong>稀疏表示</strong>的效果（WTA：winner takes all）。</p>
+<p>上面的膜电位变化机制可以用下面的常微分方程来描述：</p>
+<script type="math/tex; mode=display">
+\dot{u}_m(t) = \frac{1}{\tau}[b_m(t) - u_m(t) - \sum_\limits{\substack{n \neq m} }G_{m, n}a_n(t)</script><h3 id="Demo实现"><a href="#Demo实现" class="headerlink" title="Demo实现"></a>Demo实现</h3><p>github上的一个<a href="https://github.com/ctn-waterloo/cogsci17-decide/blob/5e82b8cf466db5ce84270c866e9dc0c36daa52b6/cogsci17_decide/networks.py" target="_blank" rel="noopener">参考实现</a>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> nengo</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">LCA</span><span class="params">(d, n_neurons, dt)</span>:</span></span><br><span class="line">    k = <span class="number">1.</span></span><br><span class="line">    beta = <span class="number">1.</span></span><br><span class="line">    tau_model = <span class="number">0.1</span></span><br><span class="line">    tau_actual = <span class="number">0.1</span></span><br><span class="line"></span><br><span class="line">    I = np.eye(d)</span><br><span class="line">    inhibit = <span class="number">1</span> - I</span><br><span class="line">    B = <span class="number">1.</span> / tau_model</span><br><span class="line">    A = (-k * I - beta * inhibit) / tau_model</span><br><span class="line"></span><br><span class="line">    <span class="keyword">with</span> nengo.Network(label=<span class="string">"LCA"</span>) <span class="keyword">as</span> net:</span><br><span class="line">        net.input = nengo.Node(size_in=d)</span><br><span class="line">        <span class="comment"># array of ensembles: d ensembles, each with n_neurons neurons</span></span><br><span class="line">        x = nengo.networks.EnsembleArray(</span><br><span class="line">            n_neurons, d,</span><br><span class="line">            eval_points=nengo.dists.Uniform(<span class="number">0.</span>, <span class="number">1.</span>),</span><br><span class="line">            intercepts=nengo.dists.Uniform(<span class="number">0.</span>, <span class="number">1.</span>),</span><br><span class="line">            encoders=nengo.dists.Choice([[<span class="number">1.</span>]]),</span><br><span class="line">            label=<span class="string">"state"</span>)</span><br><span class="line">        <span class="comment"># transform: linear transformation mapping the pre output to the post input</span></span><br><span class="line">        <span class="comment"># synapse: synapse model for filtering</span></span><br><span class="line">        nengo.Connection(x.output, x.input, transform=tau_actual * A + I, synapse=tau_actual)</span><br><span class="line">        nengo.Connection(net.input, x.input, transform=tau_actual*B, synapse=tau_actual)</span><br><span class="line">        net.output = x.output</span><br><span class="line">    <span class="keyword">return</span> net</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    dt = <span class="number">0.001</span></span><br><span class="line">    <span class="keyword">with</span> nengo.Network(seed=<span class="number">42</span>) <span class="keyword">as</span> model:</span><br><span class="line">        <span class="comment"># winner takes all</span></span><br><span class="line">        wta = LCA(<span class="number">3</span>, <span class="number">200</span>, dt)</span><br><span class="line">        stimulus = nengo.Node([<span class="number">0.8</span>, <span class="number">0.7</span>, <span class="number">0.6</span>])</span><br><span class="line">        nengo.Connection(stimulus, wta.input, synapse=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">        p_stimulus = nengo.Probe(stimulus, synapse=<span class="literal">None</span>)</span><br><span class="line">        p_output = nengo.Probe(wta.output, synapse=<span class="number">0.01</span>)</span><br><span class="line">    <span class="keyword">with</span> nengo.Simulator(model, dt=dt) <span class="keyword">as</span> sim:</span><br><span class="line">        sim.run(<span class="number">1.</span>)</span><br><span class="line"></span><br><span class="line">    fig = plt.figure()</span><br><span class="line">    plt.plot(sim.trange(), sim.data[p_output])</span><br><span class="line">    plt.title(<span class="string">"(a)LCA"</span>)</span><br><span class="line">    plt.xlabel(<span class="string">"Time [s]"</span>)</span><br><span class="line">    plt.ylabel(<span class="string">"Decoded output"</span>)</span><br><span class="line">    plt.locator_params(axis=<span class="string">'y'</span>, nbins=<span class="number">5</span>)</span><br><span class="line">    plt.tight_layout()</span><br><span class="line">    plt.show()</span><br><span class="line">        </span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+<p>效果如下：</p>
+<p><img src="../images/lca.png" alt="LCA"></p>
+<p>可以看到3个ensemble中只有得到最强输入的一个保留了下来。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/07/SNN-5-LCA/" data-id="ckcd5lqko0000k41dbcun7nx5" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+
+  <nav id="page-nav">
+    
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
+  </nav>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-compiler/" rel="tag">LLVM, compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mindspore-Python-Optimizer-C/" rel="tag">Mindspore, Python, Optimizer, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mood/" rel="tag">Mood</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance-C/" rel="tag">Performance, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow-Deep-Learning/" rel="tag">TensorFlow, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mind-hack/" rel="tag">mind-hack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%AA%E6%9E%81-rendering/" rel="tag">太极, rendering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/LLVM-compiler/" style="font-size: 10px;">LLVM, compiler</a> <a href="/tags/Mindspore-Python-Optimizer-C/" style="font-size: 10px;">Mindspore, Python, Optimizer, C++</a> <a href="/tags/Mood/" style="font-size: 10px;">Mood</a> <a href="/tags/Performance-C/" style="font-size: 10px;">Performance, C++</a> <a href="/tags/SNN-Deep-Learning/" style="font-size: 20px;">SNN, Deep Learning</a> <a href="/tags/TensorFlow-Deep-Learning/" style="font-size: 10px;">TensorFlow, Deep Learning</a> <a href="/tags/c/" style="font-size: 15px;">c++</a> <a href="/tags/mind-hack/" style="font-size: 10px;">mind-hack</a> <a href="/tags/pybind11-c-python/" style="font-size: 15px;">pybind11, c++, python</a> <a href="/tags/%E5%A4%AA%E6%9E%81-rendering/" style="font-size: 10px;">太极, rendering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/07/LLVM0/">LLVM0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/31/Taichi0/">Taichi0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/23/two-list-system/">two-list system</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/09/Python-Pass/">Python_Pass</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

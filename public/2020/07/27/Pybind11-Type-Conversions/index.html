@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Pybind11 Type Conversions | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Pybind11类型转换Pybind11帮助我们方便的实现C++和Python之间的调用，无论是相互的接口暴露还是数据传递都要求我们正确的在C++和Python类型之间进行转换（官方文档）。 三种场景 C++原生类型暴露给python Python原生类型暴露给C++ C++和Python原生类型间相互转换  C++原生类型暴露给Python使用py::class_将自定义的C++类型暴露给Pyt">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pybind11 Type Conversions">
+<meta property="og:url" content="http://yoursite.com/2020/07/27/Pybind11-Type-Conversions/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Pybind11类型转换Pybind11帮助我们方便的实现C++和Python之间的调用，无论是相互的接口暴露还是数据传递都要求我们正确的在C++和Python类型之间进行转换（官方文档）。 三种场景 C++原生类型暴露给python Python原生类型暴露给C++ C++和Python原生类型间相互转换  C++原生类型暴露给Python使用py::class_将自定义的C++类型暴露给Pyt">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-07-27T02:17:43.000Z">
+<meta property="article:modified_time" content="2020-07-27T04:01:28.342Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="pybind11, c++, python">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Pybind11-Type-Conversions" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/27/Pybind11-Type-Conversions/" class="article-date">
+  <time datetime="2020-07-27T02:17:43.000Z" itemprop="datePublished">2020-07-27</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Pybind11 Type Conversions
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Pybind11类型转换"><a href="#Pybind11类型转换" class="headerlink" title="Pybind11类型转换"></a>Pybind11类型转换</h1><p>Pybind11帮助我们方便的实现C++和Python之间的调用，无论是相互的接口暴露还是数据传递都要求我们正确的在C++和Python类型之间进行转换（<a href="https://pybind11.readthedocs.io/en/stable/advanced/cast/overview.html" target="_blank" rel="noopener">官方文档</a>）。</p>
+<h2 id="三种场景"><a href="#三种场景" class="headerlink" title="三种场景"></a>三种场景</h2><ol>
+<li>C++原生类型暴露给python</li>
+<li>Python原生类型暴露给C++</li>
+<li>C++和Python原生类型间相互转换</li>
+</ol>
+<h2 id="C-原生类型暴露给Python"><a href="#C-原生类型暴露给Python" class="headerlink" title="C++原生类型暴露给Python"></a>C++原生类型暴露给Python</h2><p>使用<code>py::class_</code>将自定义的C++类型暴露给Python（<a href="https://pybind11.readthedocs.io/en/stable/classes.html" target="_blank" rel="noopener">参考这里</a>）。C++类型传递给Python时会在原生C++类型外加一层wrapper，从Python取回时只用去掉wrapper即可。</p>
+<h2 id="Python原生类型暴露给C"><a href="#Python原生类型暴露给C" class="headerlink" title="Python原生类型暴露给C++"></a>Python原生类型暴露给C++</h2><p>在C++中取用Python的原生类型（例如：<code>tuple</code>、<code>list</code>），例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// C++中使用Python对象</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">print_list</span><span class="params">(py::<span class="built_in">list</span> my_list)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> item : my_list) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; item &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Python中传入Python对象给C++:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>print_list([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br><span class="line"><span class="number">1</span> <span class="number">2</span> <span class="number">3</span></span><br></pre></td></tr></table></figure>
+<p>这个例子里Python中的<code>list</code>类型没有进行任何转换，只是被封装进了C++的<code>py::list</code>类中。目前Pybind11支持以下类型(<a href="https://pybind11.readthedocs.io/en/stable/advanced/pycpp" target="_blank" rel="noopener">参考这里</a>)：<code>handle</code>, <code>object</code>, <code>bool_</code>, <code>int_</code>, <code>float_</code>, <code>str</code>, <code>bytes</code>, <code>tuple</code>, <code>list</code>, <code>dict</code>, <code>slice</code>, <code>none</code>, <code>capsule</code>, <code>iterable</code>, <code>iterator</code>, <code>function</code>, <code>buffer</code>, <code>array</code>, <code>array_t</code>。</p>
+<h2 id="C-和Python原生类型间相互转换"><a href="#C-和Python原生类型间相互转换" class="headerlink" title="C++和Python原生类型间相互转换"></a>C++和Python原生类型间相互转换</h2><p>有些场景C++和Python都用的是各自的原生类型，Pybind11支持常见C++原生类型和Python原生类型间的相互转换，例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">print_vector</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;v)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> item : v) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; item &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Python中调用：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; print_vector([1, 2, 3])</span><br><span class="line">1 2 3</span><br></pre></td></tr></table></figure>
+<p>容易注意到Python中传入的为<code>list</code>类型，而C++中处理的类型为<code>const std::vector&lt;int&gt; &amp;</code>。Pybind11这种默认类型转换会在原生类型间拷贝数据，例如上面Python中的调用会首先将list中的数据拷贝到一个<code>std::vector&lt;int&gt;</code>中，然后进行C++中的调用。</p>
+<p>NOTE: 默认的拷贝可能开销很大，可以通过手写<a href="https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#opaque" target="_blank" rel="noopener">opaque types</a>重载类型转换的wrapper来避免不必要的拷贝。opaque types还没有使用过，有机会单独挖坑写。</p>
+<h2 id="STL库"><a href="#STL库" class="headerlink" title="STL库"></a>STL库</h2><p>Pybind11默认（<code>pybind11/pybind11.h</code>）支持<code>std::pair&lt;&gt;</code>，<code>std::tuple&lt;&gt;</code>和<code>list</code>, <code>set</code>, <code>dict</code>之间的自动转换。引入<code>pybind11/stl.h</code>可以新增<code>std::vector&lt;&gt;</code>, <code>std::deque&lt;&gt;</code>, <code>std::list&lt;&gt;</code>, <code>std::array&lt;&gt;</code>, <code>std::set&lt;&gt;</code>, <code>std::unordered_set&lt;&gt;</code>, <code>std::map&lt;&gt;</code>和<code>std::unordered_map&lt;&gt;</code>的与Python的自动转换。</p>
+<h3 id="绑定STL容器"><a href="#绑定STL容器" class="headerlink" title="绑定STL容器"></a>绑定STL容器</h3><p><code>pybind11/stl_bind.h</code>可以帮助我们将STL容器作为原生对象暴露出来。例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pybind11/stl_bind.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">PYBIND11_MAKE_OPAQUE(<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;);</span><br><span class="line">PYBIND11_MAKE_OPAQUE(<span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>, <span class="keyword">double</span>&gt;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 绑定</span></span><br><span class="line">py::bind_vector&lt;<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;(m, <span class="string">"VectorInt"</span>);</span><br><span class="line">py::bind_map&lt;<span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>, <span class="keyword">double</span>&gt;&gt;(m, <span class="string">"MapStringDouble"</span>);</span><br><span class="line"><span class="comment">// 或者同时设置绑定的作用域</span></span><br><span class="line">py::bind_vector&lt;<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;(m, <span class="string">"VectorInt"</span>, py::module_local(<span class="literal">false</span>));</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/27/Pybind11-Type-Conversions/" data-id="ckd3zdaqx00000d79hxtz43ip" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/07/27/Pybind11-classes/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Pybind11 classes
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/07/26/Bonfire/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Bonfire</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-compiler/" rel="tag">LLVM, compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mindspore-Python-Optimizer-C/" rel="tag">Mindspore, Python, Optimizer, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mood/" rel="tag">Mood</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance-C/" rel="tag">Performance, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow-Deep-Learning/" rel="tag">TensorFlow, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mind-hack/" rel="tag">mind-hack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%AA%E6%9E%81-rendering/" rel="tag">太极, rendering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/LLVM-compiler/" style="font-size: 10px;">LLVM, compiler</a> <a href="/tags/Mindspore-Python-Optimizer-C/" style="font-size: 10px;">Mindspore, Python, Optimizer, C++</a> <a href="/tags/Mood/" style="font-size: 10px;">Mood</a> <a href="/tags/Performance-C/" style="font-size: 10px;">Performance, C++</a> <a href="/tags/SNN-Deep-Learning/" style="font-size: 20px;">SNN, Deep Learning</a> <a href="/tags/TensorFlow-Deep-Learning/" style="font-size: 10px;">TensorFlow, Deep Learning</a> <a href="/tags/c/" style="font-size: 15px;">c++</a> <a href="/tags/mind-hack/" style="font-size: 10px;">mind-hack</a> <a href="/tags/pybind11-c-python/" style="font-size: 15px;">pybind11, c++, python</a> <a href="/tags/%E5%A4%AA%E6%9E%81-rendering/" style="font-size: 10px;">太极, rendering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/07/LLVM0/">LLVM0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/31/Taichi0/">Taichi0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/23/two-list-system/">two-list system</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/09/Python-Pass/">Python_Pass</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

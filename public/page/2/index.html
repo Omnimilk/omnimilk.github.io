@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/page/2/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-SNN-4-Nengo" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/06/SNN-4-Nengo/" class="article-date">
+  <time datetime="2020-07-06T07:56:34.000Z" itemprop="datePublished">2020-07-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/AI/">AI</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/06/SNN-4-Nengo/">SNN[4]: Nengo</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="SNN学习笔记4：-Nengo"><a href="#SNN学习笔记4：-Nengo" class="headerlink" title="SNN学习笔记4： Nengo"></a>SNN学习笔记4： Nengo</h1><p><a href="https://www.nengo.ai/" target="_blank" rel="noopener">Nengo</a> 是一个用于神经建模框架，其扩展<a href="https://nengo.ai/nengo-dl/" target="_blank" rel="noopener">NengoDL</a>支持混用包含了生物细节的神经模型和现在流行的深度学习框架（例如：TensorFlow）。</p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>nengo安装命令：<code>pip install nengo nengo-gui</code></p>
+<p>测试是否安装成功可以尝试运行<code>nengo-gui</code>界面：<code>$: nengo</code></p>
+<p>nengo-dl安装命令：</p>
+<ol>
+<li>安装依赖的tensorflow：<code>conda install tensorflow</code></li>
+<li>安装nengo-dl: <code>pip install nengo-dl</code></li>
+</ol>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>nengo有两种使用模式：GUI和Python解释器。Python解释器模式下，nengo的表现就是一个普通的Python库，因此下面仅介绍GUI模式的使用方式及限制。</p>
+<h3 id="GUI模式"><a href="#GUI模式" class="headerlink" title="GUI模式"></a>GUI模式</h3><p>直接在命令行运行<code>$:nengo</code>即可在网页中运行图形界面。此时左侧会展示当前图的结构（方形表示<code>Nodes</code>，圆形表示<code>Ensembles</code>, 圆角矩形表示<code>Networks</code>），右侧展示对应的代码。</p>
+<p>可以点击左上角的文件夹图标可以运行很多内建的例子，例如<code>/built-in examples/tutorial/15-lorenz.py</code>可以运行一个洛伦兹吸引子的例子，效果很酷。</p>
+<p>需要注意的是，GUI模式下代码有如下限制：</p>
+<ol>
+<li>顶层网络必须叫<code>model</code></li>
+<li>不能构建<code>Simulator对象</code></li>
+<li>不能使用<code>Matplotlib</code>绘图</li>
+</ol>
+<h3 id="核心概念"><a href="#核心概念" class="headerlink" title="核心概念"></a>核心概念</h3><p><img src="../images/ecosystem.svg" alt="架构"></p>
+<p>上图Nengo Core主要包含五个核心Nengo对象和一个基于Numpy的模拟器。五个对象如下：</p>
+<ol>
+<li>nengo.Network： 一个网络可以包含ensembles、nodes、connections和其它网络</li>
+<li>nengo.Ensemble：一组神经元，用于表征一个向量<ol>
+<li>nengo.ensemble.Neurons: 用于连接ensemble中特定神经元的接口</li>
+</ol>
+</li>
+<li>Node：用于提供输入以及处理输出</li>
+<li>Connection：连接两个对象 <strong>NOTE: 和TensorFlow等不同，连接作为一个独立的对象，方便进行独立的设置</strong><ol>
+<li>nengo.connection.LearningRule：为连接制定学习规则</li>
+</ol>
+</li>
+<li>Probe：用于将对象的数据在模拟器运行时取出</li>
+</ol>
+<h3 id="Nengo-DL-Demo-Relu-VS-Spiking-neurons"><a href="#Nengo-DL-Demo-Relu-VS-Spiking-neurons" class="headerlink" title="Nengo-DL Demo: Relu VS Spiking neurons"></a>Nengo-DL Demo: Relu VS Spiking neurons</h3><p>下面的例子会展示Relu作为激活神经元和脉冲神经元的差异。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> nengo</span><br><span class="line"><span class="keyword">from</span> nengo.utils.matplotlib <span class="keyword">import</span> rasterplot</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> nengo_dl</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> nengo.Network() <span class="keyword">as</span> net:</span><br><span class="line">    <span class="comment"># 输入节点，周期为1s的正弦波</span></span><br><span class="line">    a = nengo.Node(<span class="keyword">lambda</span> t: np.sin(<span class="number">2</span> * np.pi * t))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># rate神经元，功能和Relu一致</span></span><br><span class="line">    b_rate = nengo.Ensemble(<span class="number">10</span>, <span class="number">1</span>, neuron_type=nengo.RectifiedLinear(), seed=<span class="number">2</span>)</span><br><span class="line">    nengo.Connection(a, b_rate)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># spiking神经元</span></span><br><span class="line">    b_spike = nengo.Ensemble(<span class="number">10</span>, <span class="number">1</span>, neuron_type=nengo.SpikingRectifiedLinear(), seed=<span class="number">2</span>)</span><br><span class="line">    nengo.Connection(a, b_spike)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 模拟时取出输入输出数据</span></span><br><span class="line">    p_a = nengo.Probe(a)</span><br><span class="line">    p_rate = nengo.Probe(b_rate.neurons)</span><br><span class="line">    p_spike = nengo.Probe(b_spike.neurons)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> nengo_dl.Simulator(net) <span class="keyword">as</span> sim:</span><br><span class="line">    <span class="comment"># 运行模拟1S，上述Probe数据会被保存在sim.data字典中</span></span><br><span class="line">    sim.run_steps(<span class="number">1000</span>)</span><br><span class="line"></span><br><span class="line">plt.figure()</span><br><span class="line">plt.plot(sim.trange(), sim.data[p_a])</span><br><span class="line">plt.xlabel(<span class="string">"time"</span>)</span><br><span class="line">plt.ylabel(<span class="string">"input value"</span>)</span><br><span class="line">plt.title(<span class="string">"a"</span>)</span><br><span class="line"></span><br><span class="line">plt.figure()</span><br><span class="line">plt.plot(sim.trange(), sim.data[p_rate])</span><br><span class="line">plt.xlabel(<span class="string">"time"</span>)</span><br><span class="line">plt.ylabel(<span class="string">"firing rate"</span>)</span><br><span class="line">plt.title(<span class="string">"b_rate"</span>)</span><br><span class="line"></span><br><span class="line">plt.figure()</span><br><span class="line"><span class="comment"># 时间栅格图，Spiking神经元的的脉冲事件出现与否以栅格形式展示</span></span><br><span class="line">rasterplot(sim.trange(), sim.data[p_spike])</span><br><span class="line">plt.xlabel(<span class="string">"time"</span>)</span><br><span class="line">plt.ylabel(<span class="string">"neuron"</span>)</span><br><span class="line">plt.title(<span class="string">"b_spike"</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<p>上面代码运行的结果如下：</p>
+<p><img src="../images/a.png" alt="a"></p>
+<p><img src="../images/relu.png" alt="a"></p>
+<p><img src="../images/raster.png" alt="a"></p>
+<p>可以看到每个神经元的初始连接权重及bias不同，因此对输入信号的相应略有不同；spiking neurons会在电压超过0时产生脉冲发射事件，注意图二和图三中的颜色对应，我们还可以观察到电压值越高，对应的脉冲发射频率越高。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/06/SNN-4-Nengo/" data-id="ckcbb9uco0005ys1d8i39bbjv" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-SNN-3-Synaptic-Plasticity" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/06/SNN-3-Synaptic-Plasticity/" class="article-date">
+  <time datetime="2020-07-06T03:25:03.000Z" itemprop="datePublished">2020-07-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/AI/">AI</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/06/SNN-3-Synaptic-Plasticity/">SNN[3]: Associative Learning</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="SNN学习笔记3：关联学习"><a href="#SNN学习笔记3：关联学习" class="headerlink" title="SNN学习笔记3：关联学习"></a>SNN学习笔记3：关联学习</h1><p>关联学习（Associative Learning）认为想法（神经元激活模式）和想法、想法和经历（外界刺激）会互相关联、互相强化。</p>
+<p>关联在学习和认知中有着核心的地位，记忆实际上就是一种关联，很多认知功能的本质就是一层或多层的关联。</p>
+<h2 id="赫布理论"><a href="#赫布理论" class="headerlink" title="赫布理论"></a>赫布理论</h2><p>突触（synaptic）用于连接多个神经元，其连接强度具有可以调整，这种可以调整的特性叫做突触可塑性（synaptic plasticity）。突触可塑性是记忆和学习的基础，赫布理论认为突触前的神经元对突触后神经元的反复刺激可以增加突触的传递效能，也就是强化了这两个神经元之间的连接。</p>
+<p>赫布理论强调细胞A的激活导致了细胞B的激活以及两者之间连接的强化，这种先后/因果关系的理论也叫STDP(spike-timing-dependent plasticity)。</p>
+<h2 id="STDP"><a href="#STDP" class="headerlink" title="STDP"></a>STDP</h2><p>STDP基于一个神经元的<strong>输入脉冲</strong>及<strong>输出脉冲</strong>间的相对时间来调整神经元间连接的强度。如果一个神经元的输入倾向于刚好出现在输出脉冲前，那么此神经元与输入神经元之间的连接倾向加强；如果一个神经元的输入倾向于刚好出现在输出脉冲之后，那么此神经元和输入神经元之间的连接倾向减弱。</p>
+<p>通过上面的调整机制，可能是当前神经元激活的原因的输入会被强化；不是当前神经元激活原因的输入会被弱化。这个调整的过程最后会收敛到只有一部分连接保留下来，另一部分的连接强度降低到0，以此达到一种稀疏连接的效果。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/06/SNN-3-Synaptic-Plasticity/" data-id="ckcbb9uco0004ys1dbqpog38p" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-SNN-2-Neural-Coding" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/05/SNN-2-Neural-Coding/" class="article-date">
+  <time datetime="2020-07-05T02:56:20.000Z" itemprop="datePublished">2020-07-05</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/AI/">AI</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/05/SNN-2-Neural-Coding/">SNN[2]: Neural Coding</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="SNN学习笔记2：神经编码"><a href="#SNN学习笔记2：神经编码" class="headerlink" title="SNN学习笔记2：神经编码"></a>SNN学习笔记2：神经编码</h1><p>大脑中的感知细胞在受到光、声音等外界刺激时，其动作电位的激活序列会呈现出一定的时序模式。<a href="https://en.wikipedia.org/wiki/Neural_coding" target="_blank" rel="noopener">神经编码</a>认为大脑中的感知、认知等信息由神经元的激活表征，这些激活的各方面特征（时序 、强度等）不仅能够编码数字信号也能编码模拟信号。</p>
+<h2 id="一些概念"><a href="#一些概念" class="headerlink" title="一些概念"></a>一些概念</h2><h3 id="ISI"><a href="#ISI" class="headerlink" title="ISI"></a>ISI</h3><p>ISI(interspike intervals)，激活间间隙，表示两次激活中间间隔的时间的长度。虽然每次激活的持续时间、幅度和形状可能都有差异，但通常被处理为出现/不出现的点事件（point events）。</p>
+<h3 id="神经编码"><a href="#神经编码" class="headerlink" title="神经编码"></a>神经编码</h3><p>神经编码（Neural Encoding）将外界输入刺激映射到神经元的反应，主要关注的是理解神经元如何对刺激作出反应，并建模来尝试<strong>预测</strong>神经元对其它刺激的反应。</p>
+<h3 id="神经解码"><a href="#神经解码" class="headerlink" title="神经解码"></a>神经解码</h3><p>神经解码（Neural Decoding）关注的是编码的反向映射，也就是通过观察神经元的活动<strong>推导</strong>出对应的外界刺激。</p>
+<h2 id="一些神经编码的理论"><a href="#一些神经编码的理论" class="headerlink" title="一些神经编码的理论"></a>一些神经编码的理论</h2><p>一系列的神经脉冲中包含了丰富的信息，不同编码理论侧重有所不同，在信息精度/浓度上也各有取舍。对不同功能的神经元，适用的编码也会不同。例如，对于控制肌肉收缩的运动细胞，基本只关心脉冲的发射频率（firing rate）。而对于处理复杂认知任务（例如，视觉、听觉）的神经细胞，每个脉冲出现的精确时间都包含了信息。</p>
+<h3 id="频率编码（Rate-coding）"><a href="#频率编码（Rate-coding）" class="headerlink" title="频率编码（Rate coding）"></a>频率编码（Rate coding）</h3><p>频率编码模型将外界刺激的强度编码为脉冲的发射频率（firing rate），也就是外界的刺激越强，对应神经元的脉冲发射频率越高（通常是非线性变化）。频率编码假设外界刺激的绝大多数信息都包含在神经元的发射频率中，这是一种早期的编码方案，实验表明脉冲准确的时间中也包含了大量信息。</p>
+<p>NOTE：目前发射频率没有一个公认的定义，常见的定义有：1）随时间平均 2）多次实验平均。</p>
+<h4 id="频率编码：脉冲计数码率"><a href="#频率编码：脉冲计数码率" class="headerlink" title="频率编码：脉冲计数码率"></a>频率编码：脉冲计数码率</h4><p>脉冲计数码率（spike-count rate, a.k.a temporal average）由对一次实验中的脉冲数目进行计数，然后除以实验持续的时间得到。显然，这种平均只适合恒定或者变化较慢的外界刺激，对于变化较快的外界刺激意义不大。</p>
+<h4 id="频率编码：时间相关发射率"><a href="#频率编码：时间相关发射率" class="headerlink" title="频率编码：时间相关发射率"></a>频率编码：时间相关发射率</h4><p>时间相关发射率（time-dependent firing rate）定义为 $\frac{C_{t}^{t + \Delta t}spikes}{\Delta t}$,其中$C_t^{t + \Delta t}spikes$表示$t$到$\Delta t$之间的脉冲计数。和脉冲计数码率不同，时间相关发射率不仅可以处理常量刺激，也可以处理时间相关的刺激。</p>
+<p>NOTE: 时间相关发射率依赖于有多个独立神经元，每个神经元接收同一种刺激的假设。</p>
+<h3 id="时间编码（Temporal-coding）"><a href="#时间编码（Temporal-coding）" class="headerlink" title="时间编码（Temporal coding）"></a>时间编码（Temporal coding）</h3><p>与频率编码不同，在时间编码中，脉冲出现的准确时间或者发射频率的波动被认为是携带信息的。</p>
+<h4 id="时间编码：二元编码"><a href="#时间编码：二元编码" class="headerlink" title="时间编码：二元编码"></a>时间编码：二元编码</h4><p>用二元符号来标记单位时间内是否有脉冲，1表示有脉冲，0表示没有。利用二元编码，我们可以区分频率编码中无法区分的序列，例如：0001110011和1110001100两者虽然频率一致，但是脉冲的时序显然不一样。</p>
+<h4 id="时间编码：ISI"><a href="#时间编码：ISI" class="headerlink" title="时间编码：ISI"></a>时间编码：ISI</h4><p>ISI利用激活间的区间长度来编码激活序列。</p>
+<h4 id="时间编码：稀疏编码"><a href="#时间编码：稀疏编码" class="headerlink" title="时间编码：稀疏编码"></a>时间编码：稀疏编码</h4><p>对神经元的每次强激活单独编码，通常用线性生成模型来描述（Linear Generative Model）。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/05/SNN-2-Neural-Coding/" data-id="ckcbb9ucl0001ys1df2db6hs0" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-SNN-1-LIF" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/03/SNN-1-LIF/" class="article-date">
+  <time datetime="2020-07-03T09:15:25.000Z" itemprop="datePublished">2020-07-03</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/AI/">AI</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/03/SNN-1-LIF/">SNN[1]: LIF</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="SNN学习笔记1：LIF"><a href="#SNN学习笔记1：LIF" class="headerlink" title="SNN学习笔记1：LIF"></a>SNN学习笔记1：LIF</h1><h2 id="什么是SNN？"><a href="#什么是SNN？" class="headerlink" title="什么是SNN？"></a>什么是SNN？</h2><p><a href="https://en.wikipedia.org/wiki/Spiking_neural_network" target="_blank" rel="noopener">SNN</a>（Spiking neural network，脉冲神经网络）号称是第三代神经网络, 与当前流行的神经网络的主要区别是将神经脉冲传播的动态过程纳入学习和推理中。SNN中的神经元不会在每次传播中都激活，而是只有当神经元的膜电位超过阈值时才激活，在激活时发射电脉冲（spikes，神经科学中常称作动作电位），这些电脉冲通过轴突传递给其它的神经元。</p>
+<p>因此， 神经元的膜电位的变化的描述变得十分重要。下面介绍几种描述膜电位变化的模型。</p>
+<h3 id="Integrate-and-fire"><a href="#Integrate-and-fire" class="headerlink" title="Integrate-and-fire"></a>Integrate-and-fire</h3><p>Integrate-and-fire是最早用来描述膜电位变化的模型（1907年！），神经元膜电位的变化由下面的公式表示:</p>
+<script type="math/tex; mode=display">
+I(t) = C_m \frac{dV_m(t)}{dt}</script><p>$C_m$ 表示神经元的电容, 我们容易看出上式只是电容公式Q=CV两边同时对时间求导。</p>
+<p>此模型有如下性质：当有电流输入时，膜电位将会升高。</p>
+<h4 id="不应期"><a href="#不应期" class="headerlink" title="不应期"></a>不应期</h4><p>通过增加不应期（refractory period）$t_{ref}$可以使Integrate-and-fire模型更加精准。所谓不应期，就是在此期间神经元无法激活，这一现象在实际的神经元中已经被观察到，微观上可以由<a href="https://www.youtube.com/watch?v=Gsf9IB-wQdU" target="_blank" rel="noopener">钠钾离子通道的状态</a>来解释。</p>
+<p>不应期限制了神经元激活的频率，激活频率与不应期$t_{ref}$的关系如下：</p>
+<script type="math/tex; mode=display">
+f(I) = \frac{I}{C_mV_{th} + t_{ref}I}</script><h4 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h4><p>一个显著的缺点是，上述模型没有实现时间相关记忆（time-dependent memory）,即如果这个模型收到一个远超阈值的信号时，会永远将此信号记在自己的膜电位中。</p>
+<h3 id="LIF"><a href="#LIF" class="headerlink" title="LIF"></a>LIF</h3><p><a href="https://en.wikipedia.org/wiki/Biological_neuron_model#Leaky_integrate-and-fire" target="_blank" rel="noopener">LIF</a>(Leaky integrate-and-fire)通过增加“漏电（Leaky）”项解决了Integrate-and-fire模型中缺少时间相关记忆的问题。模型的公式如下：</p>
+<script type="math/tex; mode=display">
+I(t) - \frac{V_m(t)}{R_m} = C_m \frac{dV_m(t)}{dt}</script><p>“漏电”项$\frac{V_m(t)}{R_m}$中的$R_m$表示膜电阻。</p>
+<p>公式蕴含了下面这些有趣的性质：</p>
+<ol>
+<li>激活神经元的输入电流必须超过$I_{th} = \frac{V_{th}}{R_m}$, 否则漏电项会导致膜电位泄露</li>
+<li>大电流输入时，模型趋近于Integrate-and-fire+不应期</li>
+</ol>
+<h2 id="LIF-Nengo实现"><a href="#LIF-Nengo实现" class="headerlink" title="LIF: Nengo实现"></a>LIF: Nengo实现</h2><p>Nengo是一个SNN相关的库，利用Nengo可以很容易实现上述LIF模型。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> nengo</span><br><span class="line"><span class="keyword">from</span> nengo.utils.matplotlib <span class="keyword">import</span> rasterplot</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> nengo.dists <span class="keyword">import</span> Uniform</span><br><span class="line"></span><br><span class="line">model = nengo.Network(label=<span class="string">"A Single Neuron"</span>)</span><br><span class="line"><span class="keyword">with</span> model:</span><br><span class="line">    neuron = nengo.Ensemble(<span class="number">1</span>, dimensions=<span class="number">1</span>, intercepts=Uniform(<span class="number">-.5</span>, <span class="number">-.5</span>), max_rates=Uniform(<span class="number">100</span>, <span class="number">100</span>), encoders=[[<span class="number">1</span>]])</span><br><span class="line">    <span class="comment"># input node</span></span><br><span class="line">    cos = nengo.Node(<span class="keyword">lambda</span> t: np.cos(<span class="number">8</span>*t))</span><br><span class="line">    nengo.Connection(cos, neuron)</span><br><span class="line">    cos_probe = nengo.Probe(cos)</span><br><span class="line">    <span class="comment"># 神经元原始脉冲输出</span></span><br><span class="line">    spikes = nengo.Probe(neuron.neurons)</span><br><span class="line">    <span class="comment"># 细胞体电压</span></span><br><span class="line">    voltage = nengo.Probe(neuron.neurons, <span class="string">"voltage"</span>)</span><br><span class="line">    <span class="comment"># spikes filtered by a 10ms post-synaptic filter</span></span><br><span class="line">    filtered = nengo.Probe(neuron, synapse=<span class="number">0.01</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> nengo.Simulator(model) <span class="keyword">as</span> sim:</span><br><span class="line">    sim.run(<span class="number">1</span>)</span><br><span class="line">    <span class="comment"># plot the decoded output of the ensemble</span></span><br><span class="line">    plt.figure()</span><br><span class="line">    plt.plot(sim.trange(), sim.data[filtered])</span><br><span class="line">    plt.plot(sim.trange(), sim.data[cos_probe])</span><br><span class="line">    plt.xlim(<span class="number">0</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># plot the spiking output of the ensemble</span></span><br><span class="line">    plt.figure(figsize=(<span class="number">10</span>, <span class="number">8</span>))</span><br><span class="line">    plt.subplot(<span class="number">221</span>)</span><br><span class="line">    rasterplot(sim.trange(), sim.data[spikes])</span><br><span class="line">    plt.ylabel(<span class="string">"Neuron"</span>)</span><br><span class="line">    plt.xlim(<span class="number">0</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># plot the soma voltages of the neurons</span></span><br><span class="line">    plt.subplot(<span class="number">222</span>)</span><br><span class="line">    plt.plot(sim.trange(), sim.data[voltage][:,<span class="number">0</span>], <span class="string">'r'</span>)</span><br><span class="line">    plt.xlim(<span class="number">0</span>, <span class="number">1</span>)</span><br><span class="line">    plt.show()</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/03/SNN-1-LIF/" data-id="ckcbb9uch0000ys1dhtq89m63" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-rvalue-reference-and-emplace" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/03/rvalue-reference-and-emplace/" class="article-date">
+  <time datetime="2020-07-03T03:37:11.000Z" itemprop="datePublished">2020-07-03</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/03/rvalue-reference-and-emplace/">rvalue reference and emplace</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="右值引用和emplace"><a href="#右值引用和emplace" class="headerlink" title="右值引用和emplace"></a>右值引用和emplace</h1><p>这篇文章初衷是好奇<code>push_back</code>和<code>emplace_back</code>的区别，了解之后发现绕不开右值引用，在此一并记录一下。</p>
+<h2 id="右值引用"><a href="#右值引用" class="headerlink" title="右值引用"></a>右值引用</h2><p>右值引用（<code>rvalue reference</code>）是C++11中引入的新特性，显然是与C++11之前普通左值引用相对的一个概念。下面的右值引用的介绍很多参考自<a href="http://thbecker.net/articles/rvalue_references/section_02.html" target="_blank" rel="noopener">这篇文章</a>。</p>
+<h3 id="左值与右值"><a href="#左值与右值" class="headerlink" title="左值与右值"></a>左值与右值</h3><p>一个粗略的定义如下：</p>
+<p>左值是一个可以出现在赋值符号（<code>=</code>）左边或者右边的表达式, 可以理解为对一块内存的引用；</p>
+<p>右值是一个只能出现在赋值符号右边的表达式， 注意右值不是对内存的引用，因此不能进行取地址操作。</p>
+<p>如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">42</span>;</span><br><span class="line"><span class="keyword">int</span> b = <span class="number">43</span>;</span><br><span class="line"><span class="comment">// a, b 均为左值</span></span><br><span class="line">a = b;</span><br><span class="line">b = a;</span><br><span class="line"><span class="comment">// a + b 为右值</span></span><br><span class="line"><span class="keyword">int</span> c = a  + b;</span><br><span class="line">a + b = <span class="number">42</span>; <span class="comment">// error!</span></span><br><span class="line"><span class="comment">// 不能对右值取地址</span></span><br><span class="line">a  = foo(); <span class="comment">// ok, foo() is a rvalue</span></span><br><span class="line"><span class="keyword">int</span>* p = &amp;foo(); <span class="comment">// invalid, 不能对右值取地址</span></span><br></pre></td></tr></table></figure>
+<h3 id="为什么要右值引用？"><a href="#为什么要右值引用？" class="headerlink" title="为什么要右值引用？"></a>为什么要右值引用？</h3><h4 id="move语义"><a href="#move语义" class="headerlink" title="move语义"></a>move语义</h4><p>假设类X中包括一个指向资源的指针<code>m_pResource</code>，我们想实现一个接收<strong>临时对象</strong>作为参数的拷贝赋值操作符，其实现可能如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">X&amp; X::<span class="keyword">operator</span>=(<span class="keyword">const</span> X &amp;rhs) &#123;</span><br><span class="line">  <span class="comment">//1. 拷贝rhs.m_pResource</span></span><br><span class="line">  <span class="comment">//2. 析构rhs.m_pResource指向的资源</span></span><br><span class="line">  <span class="comment">//3. 将拷贝的资源赋给self.m_pResource</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不难看出，上面对资源<code>m_pResource</code>的拷贝和析构十分低效，我们可以直接和临时实例交换指针（此所谓move语义）。另外，对于非临时对象的拷贝，我们可能不想析构其资源。因此我们需要一个类型来标识这样的临时对象，对它进行单独的处理，例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">X&amp; X::operator&#x3D;( &lt;Desired type&gt;rhs) &#123;</span><br><span class="line">  &#x2F;&#x2F;1. swap this-&gt;m_pResource and rhs.m_pResource</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其实右值引用就是我们想要的类型，上面代码中的<code>&lt;Desired type&gt;</code>我们可以用<code>X&amp;&amp;</code>替代，表示是X的右值引用。</p>
+<h2 id="emplace-back-or-push-back"><a href="#emplace-back-or-push-back" class="headerlink" title="emplace_back or push_back?"></a>emplace_back or push_back?</h2><h3 id="一个小实验"><a href="#一个小实验" class="headerlink" title="一个小实验"></a>一个小实验</h3><p>猜猜看下面的代码会进行几次复制操作？</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Point</span> &#123;</span></span><br><span class="line">  <span class="keyword">float</span> x, y;</span><br><span class="line">  Point(<span class="keyword">float</span> x, <span class="keyword">float</span> y):x(x), y(y)&#123;&#125;</span><br><span class="line"></span><br><span class="line">  Point(<span class="keyword">const</span> Point&amp; <span class="built_in">point</span>):x(<span class="built_in">point</span>.x), y(<span class="built_in">point</span>.y) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"copying!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Point&gt; points;</span><br><span class="line">  points.push_back(Point(<span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line">  points.push_back(Point(<span class="number">3</span>, <span class="number">4</span>));</span><br><span class="line">  points.push_back(Point(<span class="number">5</span>, <span class="number">6</span>));</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>答案是六次，其中三次是将临时<code>Point</code>对象拷贝至容器，有一次是容器容量从1到2的拷贝，有两次是容器容量从2到4的拷贝。</p>
+<h4 id="消除扩容拷贝"><a href="#消除扩容拷贝" class="headerlink" title="消除扩容拷贝"></a>消除扩容拷贝</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Point</span> &#123;</span></span><br><span class="line">  <span class="keyword">float</span> x, y;</span><br><span class="line">  Point(<span class="keyword">float</span> x, <span class="keyword">float</span> y):x(x), y(y)&#123;&#125;</span><br><span class="line"></span><br><span class="line">  Point(<span class="keyword">const</span> Point&amp; <span class="built_in">point</span>):x(<span class="built_in">point</span>.x), y(<span class="built_in">point</span>.y) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"copying!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Point&gt; points;</span><br><span class="line">  <span class="comment">// 预分配内存 <span class="doctag">NOTE:</span> 和std::vector&lt;Point&gt; points(3)的区别，reserve只分配内存不调用构造函数</span></span><br><span class="line">  points.reserve(<span class="number">3</span>);</span><br><span class="line">  points.push_back(Point(<span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line">  points.push_back(Point(<span class="number">3</span>, <span class="number">4</span>));</span><br><span class="line">  points.push_back(Point(<span class="number">5</span>, <span class="number">6</span>));</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在只用进行三次插入容器时的拷贝</p>
+<h4 id="move语义消除插入容器时的拷贝"><a href="#move语义消除插入容器时的拷贝" class="headerlink" title="move语义消除插入容器时的拷贝"></a>move语义消除插入容器时的拷贝</h4><p>直接将参数forward给容器，直接在容器中构造。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Point</span> &#123;</span></span><br><span class="line">  <span class="keyword">float</span> x, y;</span><br><span class="line">  Point(<span class="keyword">float</span> x, <span class="keyword">float</span> y):x(x), y(y)&#123;&#125;</span><br><span class="line"></span><br><span class="line">  Point(<span class="keyword">const</span> Point&amp; <span class="built_in">point</span>):x(<span class="built_in">point</span>.x), y(<span class="built_in">point</span>.y) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"copying!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Point&gt; points;</span><br><span class="line">  points.emplace_back(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">  points.emplace_back(<span class="number">3</span>, <span class="number">4</span>);</span><br><span class="line">  points.emplace_back(<span class="number">5</span>, <span class="number">6</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在拷贝的次数为0次！</p>
+<h3 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h3><p>首先看看C++11中两者的接口：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt; <span class="class"><span class="keyword">class</span>... <span class="title">Args</span> &gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">emplace_back</span>( <span class="title">Args</span>&amp;&amp;... <span class="title">args</span> );</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;T, Allocator&gt;::push_back( <span class="keyword">const</span> T&amp; value );</span><br><span class="line"><span class="keyword">void</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;T, Allocator&gt;::push_back( T&amp;&amp; value );</span><br></pre></td></tr></table></figure>
+<p>注意到接收右值的接口的差别，push_back只能接收Vector中存储类型的右值作为参数，而emplace可以接收变长模板作为参数，尝试为变长模板找到最合适的构造函数直接在容器中构建。</p>
+<p>NOTE：实验中的例子，emplace_back的变长参数也可以接收<code>Point</code>对象，此时会先调用Point的默认构造函数然后调用复制构造函数。对应代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Point</span> &#123;</span></span><br><span class="line">  <span class="keyword">float</span> x, y;</span><br><span class="line">  Point(<span class="keyword">float</span> x, <span class="keyword">float</span> y):x(x), y(y)&#123;&#125;</span><br><span class="line"></span><br><span class="line">  Point(<span class="keyword">const</span> Point&amp; <span class="built_in">point</span>):x(<span class="built_in">point</span>.x), y(<span class="built_in">point</span>.y) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"copying!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Point&gt; points;</span><br><span class="line">  points.reserve(<span class="number">3</span>);</span><br><span class="line">  points.emplace_back(Point(<span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line">  points.emplace_back(Point(<span class="number">3</span>, <span class="number">4</span>));</span><br><span class="line">  points.emplace_back(Point(<span class="number">5</span>, <span class="number">6</span>));</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/03/rvalue-reference-and-emplace/" data-id="ckcbb9ud4000yys1d2plc2s6p" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-pybind11-install" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/02/pybind11-install/" class="article-date">
+  <time datetime="2020-07-02T11:26:50.000Z" itemprop="datePublished">2020-07-02</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/02/pybind11-install/">pybind11 install</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Pybind11-安装及简单使用"><a href="#Pybind11-安装及简单使用" class="headerlink" title="Pybind11 安装及简单使用"></a>Pybind11 安装及简单使用</h1><p>之前项目里用到了pybind11，效果强大&amp;很好用。但是由于那个项目整个工程直接包含了pybind11的头文件和构建脚本，因此无需自己动手折腾pybind11的环境和构建。最近自己想用pybind11做些POC的小实验，在此记录一些搭建环境的过程。</p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><ol>
+<li>依赖安装：<code>sudo apt-get install python-dev cmake</code></li>
+<li>pybind11 python: <code>conda install pybind11</code></li>
+<li>pybind11 安装：<ol>
+<li>下载repo：<code>git clone https://github.com/pybind/pybind11.git</code></li>
+<li><code>cd pybind11</code></li>
+<li><code>mkdir build</code></li>
+<li><code>cd build</code></li>
+<li><code>cmake ..</code></li>
+<li><code>make check -j8</code></li>
+</ol>
+</li>
+</ol>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>尝试编译官网的玩具样例，代码如下（保存到文件<code>toy.cc</code>）:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pybind11/pybind11.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> i, <span class="keyword">int</span> j)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> i + j;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">PYBIND11_MODULE(example, m) &#123;</span><br><span class="line">  m.doc() = <span class="string">"pybind11 example plugin"</span>;</span><br><span class="line">  m.def(<span class="string">"add"</span>, &amp;add, <span class="string">"A function which adds two numbers"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">c++ -O3 -Wall -shared -std&#x3D;c++11 -fPIC &#96;python3 -m pybind11 --includes&#96; toy.cc -o shared&#96;python3-config --extension-suffix&#96;</span><br></pre></td></tr></table></figure>
+<p>NOTE: 上述命令初看很唬人，我们尝试运行一下<code>python3 -m pybind11 --includes</code>和<code>python3-config --extension-suffix</code>, 得到的结果如下：<code>-I/home/xxx/anaconda3/envs/mindspore/include/python3.7m -I/home/xxx/anaconda3/envs/mindspore/include</code>, <code>.cpython-37m-x86_64-linux-gnu.so</code>。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/02/pybind11-install/" data-id="ckcbb9ucp0006ys1d39py6uhg" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-expression-template" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/01/expression-template/" class="article-date">
+  <time datetime="2020-07-01T00:52:02.000Z" itemprop="datePublished">2020-07-01</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/01/expression-template/">expression template and CRTP</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="表达式模板和静态多态"><a href="#表达式模板和静态多态" class="headerlink" title="表达式模板和静态多态"></a>表达式模板和静态多态</h1><p>表达式模板（<a href="https://www.en.wikipedia.org/wiki/Expression_templates" target="_blank" rel="noopener">expression template</a>）是一种模板元编程技术，在编译期间延迟计算的求值，并构造表达计算的结构（expression tree）。利用expression tree的变换，可以实现运行前的自动循环融合（loop fusion）等功能。</p>
+<p>静态多态（也叫<a href="https://www.en.wikipedia.org/wiki/Curiously_recurring_template_pattern" target="_blank" rel="noopener">CRTP</a>）用一个模板基类来在编译期完成多态的实际实现的分发(与运行时使用<code>virtual</code> <code>override</code>的多态机制相对, 因此叫静态多态)，不同类型的子类将自身类型作为基类的模板参数来继承，以此通知基类将对应类型的调用分发给自己。静态多态消除了动态多态的开销，可以提升运行时性能，经常和表达式模板一起使用。</p>
+<h2 id="静态多态demo"><a href="#静态多态demo" class="headerlink" title="静态多态demo"></a>静态多态demo</h2><p>下面以一个简单demo展示上述静态多态的原理和用法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">Animal</span> &#123;</span></span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">Say</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;T*&gt;(<span class="keyword">this</span>)-&gt;Say_();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Dog</span> :</span> Animal&lt;Dog&gt; &#123;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">Say_</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"wang wang wang!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Cat</span> :</span> Animal&lt;Cat&gt; &#123;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">Say_</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"meow meow meow~"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Zoo</span> &#123;</span></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>&gt;</span></span><br><span class="line"><span class="class">  <span class="title">void</span> <span class="title">AddAnimal</span>(<span class="title">Animal</span>&lt;T&gt; <span class="title">animal</span>) &#123;</span></span><br><span class="line">    animal.Say();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  Dog dog&#123;&#125;;</span><br><span class="line">  Cat cat&#123;&#125;;</span><br><span class="line">  Zoo zoo&#123;&#125;;</span><br><span class="line">  zoo.AddAnimal(dog);</span><br><span class="line">  zoo.AddAnimal(cat);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="表达式模板demo"><a href="#表达式模板demo" class="headerlink" title="表达式模板demo"></a>表达式模板demo</h2><p><a href="https://www.en.wikipedia.org/wiki/Expression_templates" target="_blank" rel="noopener">wiki</a>上给出了一个表达式模板很好的例子，对vector加法进行循环融合。原理大致如下：</p>
+<ol>
+<li>将+法操作符封装为表达式求和类型VecSum的构造函数，因此在+法时不进行实际的求值，而是进行表达式树的构建</li>
+<li>在对Vec进行赋值操作时进行表达式求值，此时对VecSum表达式中的<code>[]</code>操作符递归调用，直到完成实际的求和。</li>
+</ol>
+<p>代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;assert.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> E&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VecExpression</span> &#123;</span></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">double</span> <span class="keyword">operator</span>[](<span class="keyword">size_t</span> i) <span class="keyword">const</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;E <span class="keyword">const</span>&amp;&gt;(*<span class="keyword">this</span>)[i];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">size_t</span> <span class="title">size</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;<span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;E <span class="keyword">const</span>&amp;&gt;(*<span class="keyword">this</span>).<span class="built_in">size</span>();&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Vec</span> :</span> <span class="keyword">public</span> VecExpression&lt;Vec&gt; &#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; elems;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">double</span> <span class="keyword">operator</span>[](<span class="keyword">size_t</span> i) <span class="keyword">const</span> &#123; <span class="keyword">return</span> elems[i];&#125;</span><br><span class="line">  <span class="keyword">double</span> &amp;<span class="keyword">operator</span>[](<span class="keyword">size_t</span> i) &#123; <span class="keyword">return</span> elems[i]; &#125;</span><br><span class="line">  <span class="function"><span class="keyword">size_t</span> <span class="title">size</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> elems.<span class="built_in">size</span>();&#125;</span><br><span class="line"></span><br><span class="line">  Vec(<span class="keyword">size_t</span> n) : elems(n) &#123;&#125;</span><br><span class="line">  Vec(<span class="built_in">std</span>::<span class="built_in">initializer_list</span>&lt;<span class="keyword">double</span>&gt; init) : elems(init) &#123;&#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 从VecExpression构建Vec, 此时对表达式求值</span></span><br><span class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> E&gt;</span><br><span class="line">  Vec(VecExpression&lt;E&gt; <span class="keyword">const</span>&amp; expr) : elems(expr.<span class="built_in">size</span>()) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">size_t</span> i = <span class="number">0</span>; i != expr.<span class="built_in">size</span>(); i++) &#123;</span><br><span class="line">      elems[i] = expr[i];</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;  </span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">dump</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;elem : elems) &#123;</span><br><span class="line">      <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; elem &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 静态多态</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> E1, <span class="keyword">typename</span> E2&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VecSum</span> :</span> <span class="keyword">public</span> VecExpression&lt;VecSum&lt;E1, E2&gt;&gt; &#123;</span><br><span class="line">  E1 <span class="keyword">const</span>&amp; _u;</span><br><span class="line">  E2 <span class="keyword">const</span>&amp; _v;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  VecSum(E1 <span class="keyword">const</span> &amp;u, E2 <span class="keyword">const</span> &amp;v) : _u(u), _v(v) &#123;</span><br><span class="line">    assert(u.<span class="built_in">size</span>() == v.<span class="built_in">size</span>());</span><br><span class="line">  &#125;</span><br><span class="line"> <span class="comment">// Vec的构造函数中被调用，此时求值</span></span><br><span class="line">  <span class="keyword">double</span> <span class="keyword">operator</span>[](<span class="keyword">size_t</span> i) <span class="keyword">const</span> &#123; <span class="keyword">return</span> _u[i] + _v[i]; &#125;</span><br><span class="line">  <span class="function"><span class="keyword">size_t</span> <span class="title">size</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> _v.<span class="built_in">size</span>(); &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将VecSum的构造函数封装成+运算符</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> E1, <span class="keyword">typename</span> E2&gt;</span><br><span class="line">VecSum&lt;E1, E2&gt; <span class="keyword">operator</span>+(VecExpression&lt;E1&gt; <span class="keyword">const</span> &amp;u, VecExpression&lt;E2&gt; <span class="keyword">const</span> &amp;v) &#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; __PRETTY_FUNCTION__ &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  <span class="keyword">return</span> VecSum&lt;E1, E2&gt;(*<span class="keyword">static_cast</span>&lt;<span class="keyword">const</span> E1*&gt;(&amp;u), *<span class="keyword">static_cast</span>&lt;<span class="keyword">const</span> E2*&gt;(&amp;v));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  Vec v0 = &#123;<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>&#125;;</span><br><span class="line">  Vec v1 = &#123;<span class="number">2</span>, <span class="number">2</span>, <span class="number">2</span>&#125;;</span><br><span class="line">  Vec v2 = &#123;<span class="number">3</span>, <span class="number">3</span>, <span class="number">3</span>&#125;;</span><br><span class="line">  Vec v3 = &#123;<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>&#125;;</span><br><span class="line"></span><br><span class="line">  Vec sum = v0 + v1 + v2 + v3;</span><br><span class="line">  sum.dump();</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">VecSum&lt;E1, E2&gt; operator+(const VecExpression&lt;E&gt;&amp;, const VecExpression&lt;E2&gt;&amp;) [with E1 &#x3D; Vec; E2 &#x3D; Vec]</span><br><span class="line">VecSum&lt;E1, E2&gt; operator+(const VecExpression&lt;E&gt;&amp;, const VecExpression&lt;E2&gt;&amp;) [with E1 &#x3D; VecSum&lt;Vec, Vec&gt;; E2 &#x3D; Vec]</span><br><span class="line">VecSum&lt;E1, E2&gt; operator+(const VecExpression&lt;E&gt;&amp;, const VecExpression&lt;E2&gt;&amp;) [with E1 &#x3D; VecSum&lt;VecSum&lt;Vec, Vec&gt;, Vec&gt;; E2 &#x3D; Vec]</span><br><span class="line">10 11 12</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/01/expression-template/" data-id="ckcbb9ucs000cys1d6rvned7p" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-cpp-variadic-template" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/06/30/cpp-variadic-template/" class="article-date">
+  <time datetime="2020-06-30T08:49:10.000Z" itemprop="datePublished">2020-06-30</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/06/30/cpp-variadic-template/">cpp variadic template</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="C-变长模板使用"><a href="#C-变长模板使用" class="headerlink" title="C++变长模板使用"></a>C++变长模板使用</h1><p>C++11开始支持支持变长模板（variadic template），模板参数可以为任意多个, 变长模板参数用省略号来标识(…)。</p>
+<p>变长模板参数通常以递归的形式打开（因此需要定义一个没有变长参数的base case模板），下面借用一个<a href="https://www.raymii.org/s/snippets/Cpp_variadic_template_recursive_example.html" target="_blank" rel="noopener">例子</a>来说明:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Arg&gt;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Foo</span><span class="params">(Arg arg)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; __PRETTY_FUNCTION__ &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> First, <span class="keyword">typename</span>... Args&gt;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Foo</span><span class="params">(First first, Args... args)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; __PRETTY_FUNCTION__ &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">  Foo(first);</span><br><span class="line">  Foo(args...);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">string</span> one = <span class="string">"one"</span>;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">char</span>* two = <span class="string">"two"</span>;</span><br><span class="line">  Foo(one);</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  Foo(one, two);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面代码的输出如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">void Foo(Arg) [with Arg &#x3D; std::__cxx11::basic_string&lt;char&gt;]</span><br><span class="line"></span><br><span class="line">void Foo(First, Args ...) [with First &#x3D; std::__cxx11::basic_string&lt;char&gt;; Args &#x3D; &#123;const char*&#125;]</span><br><span class="line">void Foo(Arg) [with Arg &#x3D; std::__cxx11::basic_string&lt;char&gt;]</span><br><span class="line">void Foo(Arg) [with Arg &#x3D; const char*]</span><br></pre></td></tr></table></figure>
+<h2 id="求和"><a href="#求和" class="headerlink" title="求和"></a>求和</h2><p>下面尝试使用变长模板来实现一个求和的函数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Arg&gt;</span><br><span class="line"><span class="function">Arg <span class="title">Sum</span><span class="params">(Arg arg)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; __PRETTY_FUNCTION__ &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">  <span class="keyword">return</span> arg;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> First, <span class="keyword">typename</span>... Args&gt;</span><br><span class="line"><span class="function">First <span class="title">Sum</span><span class="params">(First first, Args... args)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; __PRETTY_FUNCTION__ &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">  <span class="keyword">return</span> first + Sum(args...);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; Sum(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>得到的结果如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">First Sum(First, Args ...) [with First = int; Args = &#123;int, int, int, int&#125;]</span><br><span class="line">First Sum(First, Args ...) [with First = int; Args = &#123;int, int, int&#125;]</span><br><span class="line">First Sum(First, Args ...) [with First = int; Args = &#123;int, int&#125;]</span><br><span class="line">First Sum(First, Args ...) [with First = int; Args = &#123;int&#125;]</span><br><span class="line">Arg Sum(Arg) [with Arg = int]</span><br><span class="line"><span class="number">15</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/06/30/cpp-variadic-template/" data-id="ckcbb9uct000hys1df0rjd77e" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/06/30/hello-world/" class="article-date">
+  <time datetime="2020-06-30T02:43:43.794Z" itemprop="datePublished">2020-06-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/06/30/hello-world/">Hello World</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/06/30/hello-world/" data-id="ckcbb9ucr000ays1dhj7q9322" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+
+  <nav id="page-nav">
+    
+    <a class="extend prev" rel="prev" href="/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+  </nav>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-compiler/" rel="tag">LLVM, compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mindspore-Python-Optimizer-C/" rel="tag">Mindspore, Python, Optimizer, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mood/" rel="tag">Mood</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance-C/" rel="tag">Performance, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow-Deep-Learning/" rel="tag">TensorFlow, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mind-hack/" rel="tag">mind-hack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%AA%E6%9E%81-rendering/" rel="tag">太极, rendering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/LLVM-compiler/" style="font-size: 10px;">LLVM, compiler</a> <a href="/tags/Mindspore-Python-Optimizer-C/" style="font-size: 10px;">Mindspore, Python, Optimizer, C++</a> <a href="/tags/Mood/" style="font-size: 10px;">Mood</a> <a href="/tags/Performance-C/" style="font-size: 10px;">Performance, C++</a> <a href="/tags/SNN-Deep-Learning/" style="font-size: 20px;">SNN, Deep Learning</a> <a href="/tags/TensorFlow-Deep-Learning/" style="font-size: 10px;">TensorFlow, Deep Learning</a> <a href="/tags/c/" style="font-size: 15px;">c++</a> <a href="/tags/mind-hack/" style="font-size: 10px;">mind-hack</a> <a href="/tags/pybind11-c-python/" style="font-size: 15px;">pybind11, c++, python</a> <a href="/tags/%E5%A4%AA%E6%9E%81-rendering/" style="font-size: 10px;">太极, rendering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/07/LLVM0/">LLVM0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/31/Taichi0/">Taichi0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/23/two-list-system/">two-list system</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/09/Python-Pass/">Python_Pass</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

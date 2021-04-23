@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Tensorflow graph_matcher | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="TF graph_matcher用法及源码探究graph_matcher是tensorflow.contrib中量化模块（quantize）的一个子模块，用于在计算图中描述和匹配特定的模式。配合对模式匹配后的处理，可以在python层面实现计算图的pass。 用法: 以Conv + BN融合为例Conv+BN是CNN网络中常见的组合。如果我们观察两者的计算公式，可以发现两者可以融合为一个算子达到运">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tensorflow graph_matcher">
+<meta property="og:url" content="http://yoursite.com/2020/07/20/Tensorflow-Graph-Matcher/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="TF graph_matcher用法及源码探究graph_matcher是tensorflow.contrib中量化模块（quantize）的一个子模块，用于在计算图中描述和匹配特定的模式。配合对模式匹配后的处理，可以在python层面实现计算图的pass。 用法: 以Conv + BN融合为例Conv+BN是CNN网络中常见的组合。如果我们观察两者的计算公式，可以发现两者可以融合为一个算子达到运">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-07-20T01:34:12.000Z">
+<meta property="article:modified_time" content="2020-07-21T06:34:23.753Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="TensorFlow, Deep Learning">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Tensorflow-Graph-Matcher" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/20/Tensorflow-Graph-Matcher/" class="article-date">
+  <time datetime="2020-07-20T01:34:12.000Z" itemprop="datePublished">2020-07-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/AI/">AI</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Tensorflow graph_matcher
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="TF-graph-matcher用法及源码探究"><a href="#TF-graph-matcher用法及源码探究" class="headerlink" title="TF graph_matcher用法及源码探究"></a>TF graph_matcher用法及源码探究</h1><p><code>graph_matcher</code>是<code>tensorflow.contrib</code>中量化模块（<code>quantize</code>）的一个子模块，用于在计算图中描述和匹配特定的模式。配合对模式匹配后的处理，可以在python层面实现计算图的pass。</p>
+<h2 id="用法-以Conv-BN融合为例"><a href="#用法-以Conv-BN融合为例" class="headerlink" title="用法: 以Conv + BN融合为例"></a>用法: 以Conv + BN融合为例</h2><p>Conv+BN是CNN网络中常见的组合。如果我们观察两者的计算公式，可以发现两者可以融合为一个算子达到运行加速的效果（实质上，Conv计算上等价于MatMul，所以融合也适用于FC+BN等组合）。</p>
+<h3 id="融合原理"><a href="#融合原理" class="headerlink" title="融合原理"></a>融合原理</h3><p>首先，分别观察Conv和BN的计算公式：</p>
+<p>​    Conv的计算公式：$z = w * x + b$</p>
+<p>​    BN的计算公式：$y = \frac{(z - \mu_B) * \gamma}{ \sigma_B} + \beta$</p>
+<p>实际上，我们可以通过更新Conv的<code>weight</code>和<code>bias</code>直接在Conv中完成Conv + BN所需完成的计算。略去推导，直接给出新的<code>weight</code>和<code>bias</code>的计算公式如下：</p>
+<p>​    $w^{\prime} = \frac{w * \gamma}{\sigma_B}$, $b^{\prime} = \frac{(b - \mu_B)\gamma}{\sigma_B} + \beta$</p>
+<p>代入新的$w^{‘}$和$b^{‘}$，容易验证新的Conv计算等价于Conv + BN:</p>
+<script type="math/tex; mode=display">
+\begin{align}
+z^{\prime} &= w^{\prime} * x + b^{\prime} \\
+          &= \frac{w * \gamma * x}{\sigma_B} +\frac{(b - \mu_B) * \gamma} {\sigma_B} + \beta \\
+          &=\frac{\gamma(w*x + b - \mu_B)}{\sigma_B} + \beta \\
+          &=\frac{(z - \mu_B) * \gamma}{\sigma_B} + \beta = y
+\end{align}</script><h3 id="graph-matcher实现"><a href="#graph-matcher实现" class="headerlink" title="graph_matcher实现"></a>graph_matcher实现</h3><p><code>tensorflow.contrib.quantize.python</code>中包含了Conv + BN融合的<a href="https://github.com/tensorflow/tensorflow/blob/590d6eef7e91a6a7392c8ffffb7b58f2e0c8bc6b/tensorflow/contrib/quantize/python/fold_batch_norms.py#L151-L205" target="_blank" rel="noopener">实现</a>，完整的代码较长，我们重点关注其中对Conv+BN模式描述的部分。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_FindFusedBatchNorms</span><span class="params">(graph)</span>:</span></span><br><span class="line">    <span class="string">"""Finds all ops and tensors related to found FusedBatchNorms.</span></span><br><span class="line"><span class="string">    	Args:</span></span><br><span class="line"><span class="string">    		graph: Graph to inspect.</span></span><br><span class="line"><span class="string">    	Returns:</span></span><br><span class="line"><span class="string">    		_FusedBatchNormMatches.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    input_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    weight_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    gamma_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    beta_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    mean_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    variance_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    </span><br><span class="line">    moving_average_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    bn_decay_pattern = graph_matcher.OpTypePattern(<span class="string">'*'</span>)</span><br><span class="line">    layer_pattern = graph_matcher.OpTypePattern(<span class="string">'Conv2D|DepthwiseConv2dNative|MatMul'</span>, inputs=[input_pattern, weight_pattern])</span><br><span class="line">    ...</span><br><span class="line">    layer_output_pattern = graph_matcher.OneofPattern([layer_pattern_with_identity, layer_pattern, batch_to_space_pattern])</span><br><span class="line">    ...</span><br><span class="line">    bn_matcher = graph_matcher.GraphMatcher(graph_matcher.OneofPattern([matmul_bn_output_reshape_pattern, batch_norm_pattern]))</span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_GetLayerMatch</span><span class="params">(match_result)</span>:</span></span><br><span class="line">        <span class="string">"""Populates a layer match object containing ops/tensors for folding BNs.</span></span><br><span class="line"><span class="string">        Args:</span></span><br><span class="line"><span class="string">        	match_result: Matched result from graph matcher</span></span><br><span class="line"><span class="string">        Returns:</span></span><br><span class="line"><span class="string">        	layer_op: Matching conv/fc op prior to batch norm</span></span><br><span class="line"><span class="string">        	BatchNormMatch: _BatchNormMatch containing all required batch norm parameters.</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        ...</span><br><span class="line">    layer_matches = []</span><br><span class="line">    matched_layer_set = set()</span><br><span class="line">    <span class="keyword">for</span> match_result <span class="keyword">in</span> bn_identity_matcher.match_graph(graph):</span><br><span class="line">        layer_op, layer_match = _GetLayerMatch(match_result)</span><br><span class="line">        <span class="keyword">if</span> layer_op <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">if</span> layer_op <span class="keyword">not</span> <span class="keyword">in</span> matched_layer_set:</span><br><span class="line">                matched_layer_set.add(layer_op)</span><br><span class="line">                layer_matches.append(layer_match)</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> layer_matches</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_FoldFusedBatchNorms</span><span class="params">(graph, is_training, freeze_batch_norm_delay)</span>:</span></span><br><span class="line">    <span class="string">"""Finds fused batch norm layers and folds them into preceding layers.</span></span><br><span class="line"><span class="string">    Folding only affects the following layers: Conv2D, fully connected, depthwise convolution.</span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">    	graph: Graph to walk and modify.</span></span><br><span class="line"><span class="string">    	is_training: Bool, true if training.</span></span><br><span class="line"><span class="string">    	freeze_batch_norm_delay: How many steps to wait before freezing moving mean</span></span><br><span class="line"><span class="string">      and variance and using them for batch normalization.</span></span><br><span class="line"><span class="string">  Raises:</span></span><br><span class="line"><span class="string">  	ValueError: When batch norm folding fails.</span></span><br><span class="line"><span class="string">  	"""</span></span><br><span class="line">    <span class="keyword">for</span> match <span class="keyword">in</span> _FindFusedBatchNorms(graph):</span><br><span class="line">        scope, sep, _ = match.layer_op.name.rpartition(<span class="string">'/'</span>)</span><br><span class="line">        <span class="keyword">with</span> graph.as_default(), graph.name_scope(scope + sep):</span><br><span class="line">            <span class="keyword">with</span> graph.name_scope(scope + sep + <span class="string">'BatchNorm_Fold'</span> + sep):</span><br><span class="line">                <span class="comment"># new weights = old weights * gamma / sqrt(variance + epsilon)</span></span><br><span class="line">                <span class="comment"># new biases = -mean * gamma / sqrt(variance + epsilon) + beta</span></span><br><span class="line">                multiplier_tensor = match.gamma_tensor * math_ops.rsqrt(match.variance_tensor + match.bn_op.get_attr(<span class="string">'epsilon'</span>))</span><br><span class="line">                bias_tensor = math_ops.subtract(match.beta_tensor, match.mean_tensor * multiplier_tensor, name=<span class="string">'bias'</span>)</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<h4 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h4><p>使用<code>GraphMatcher</code>进行pattern描述、匹配、替换主要分为以下几步：</p>
+<ol>
+<li>使用<code>OpTypePattern</code>及<code>OneofPattern</code>（语法糖）自底向上构建目标pattern</li>
+<li>用目标pattern构造<code>GraphMatcher</code></li>
+<li>向<code>GraphMatcher</code>的<code>match_graph</code>方法传入要匹配的图，获得<code>match_result</code></li>
+<li>从<code>match_result</code>中取出需要复用的pattern中的节点，构造新的节点替换pattern</li>
+</ol>
+<h2 id="graph-matcher实现-1"><a href="#graph-matcher实现-1" class="headerlink" title="graph_matcher实现"></a>graph_matcher实现</h2><p>graph_matcher的<a href="https://github.com/rockchip-linux/tensorflow/blob/master/tensorflow/contrib/quantize/python/graph_matcher.py" target="_blank" rel="noopener">实现</a>主要包括三个部分：<code>Pattern</code>, <code>GraphMatcher</code>, <code>MatchResult</code>。</p>
+<h3 id="Pattern实现"><a href="#Pattern实现" class="headerlink" title="Pattern实现"></a>Pattern实现</h3><p>Pattern作为一个抽象类，要求子类必须实现<code>match</code>方法。<code>match</code>方法接收两个参数：<code>op</code>；<code>tensor</code>。</p>
+<p>Pattern类有两个子类：<code>OpTypePattern</code>类可以限定节点的类型、输入，可以描述一个类型树；<code>Oneof</code></p>
+<p><code>Pattern</code>作为语法糖用于描述one-of关系，也就是匹配输入多个子模式之一即可。</p>
+<p>NOTE: 当前实现了的模式中，<code>match</code>方法中的<code>tensor</code>只是占位用，没有实际使用到。</p>
+<h4 id="OpTypePattern"><a href="#OpTypePattern" class="headerlink" title="OpTypePattern"></a>OpTypePattern</h4><p>构造函数（<code>def __init__(self, op_type, name=None, inputs=None, ordered_inputs=True)</code>）通过限定节点的类型、输入来描述一个类型树；对应的，<code>match</code>中也会递归地对输入节点调用<code>match</code>函数。NOTE: <code>OpType</code>的匹配是使用字符串来完成的。</p>
+<h3 id="MatchResult"><a href="#MatchResult" class="headerlink" title="MatchResult"></a>MatchResult</h3><p>保存match的结果，可以从<code>Pattern</code>实例映射到对应的匹配到的<code>op</code>和<code>tensor</code>。</p>
+<h3 id="GraphMatcher"><a href="#GraphMatcher" class="headerlink" title="GraphMatcher"></a>GraphMatcher</h3><p><code>GraphMatcher</code>中会保存一个pattern，提供方法来检验输入的<code>op</code>或者<code>graph</code>是否和<code>pattern</code>匹配，主要方法有：</p>
+<ol>
+<li>match_op</li>
+<li>match_ops</li>
+<li>match_graph</li>
+</ol>
+<h2 id="拓展思考"><a href="#拓展思考" class="headerlink" title="拓展思考"></a>拓展思考</h2><p><code>TensorFlow</code>中能够轻松的在python中操作图主要得益于图数据结构对python的暴露。当前MindSpore要在python中支持图pass(图中模式的匹配和替换)，可以对比两种思路：</p>
+<ol>
+<li>python向C++注册pass，python中对模式和要替换的目标进行描述，C++中运行pass<ol>
+<li>优点：可以复用部分优化器部分的代码；执行效率较高</li>
+<li>缺点：python pass中的pattern、target与C++通信较复杂</li>
+</ol>
+</li>
+<li>C++向python暴露图接口，直接在python中完成改图<ol>
+<li>优点：对图修改的逻辑全部包含在python中</li>
+<li>缺点：效率较低，但此类任务通常较低频，性能要求不高</li>
+</ol>
+</li>
+</ol>
+<p>综合考虑，C++新增向python暴露图接口，直接在python中完成改图较合理。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/20/Tensorflow-Graph-Matcher/" data-id="ckcugunuv00003s79coth05ko" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TensorFlow-Deep-Learning/" rel="tag">TensorFlow, Deep Learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/07/26/Bonfire/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Bonfire
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/07/07/SNN-5-LCA/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">SNN[5]: LCA</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-compiler/" rel="tag">LLVM, compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mindspore-Python-Optimizer-C/" rel="tag">Mindspore, Python, Optimizer, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mood/" rel="tag">Mood</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance-C/" rel="tag">Performance, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow-Deep-Learning/" rel="tag">TensorFlow, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mind-hack/" rel="tag">mind-hack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%AA%E6%9E%81-rendering/" rel="tag">太极, rendering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/LLVM-compiler/" style="font-size: 10px;">LLVM, compiler</a> <a href="/tags/Mindspore-Python-Optimizer-C/" style="font-size: 10px;">Mindspore, Python, Optimizer, C++</a> <a href="/tags/Mood/" style="font-size: 10px;">Mood</a> <a href="/tags/Performance-C/" style="font-size: 10px;">Performance, C++</a> <a href="/tags/SNN-Deep-Learning/" style="font-size: 20px;">SNN, Deep Learning</a> <a href="/tags/TensorFlow-Deep-Learning/" style="font-size: 10px;">TensorFlow, Deep Learning</a> <a href="/tags/c/" style="font-size: 15px;">c++</a> <a href="/tags/mind-hack/" style="font-size: 10px;">mind-hack</a> <a href="/tags/pybind11-c-python/" style="font-size: 15px;">pybind11, c++, python</a> <a href="/tags/%E5%A4%AA%E6%9E%81-rendering/" style="font-size: 10px;">太极, rendering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/07/LLVM0/">LLVM0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/31/Taichi0/">Taichi0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/23/two-list-system/">two-list system</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/09/Python-Pass/">Python_Pass</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

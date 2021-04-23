@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>SNN[2]: Neural Coding | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="SNN学习笔记2：神经编码大脑中的感知细胞在受到光、声音等外界刺激时，其动作电位的激活序列会呈现出一定的时序模式。神经编码认为大脑中的感知、认知等信息由神经元的激活表征，这些激活的各方面特征（时序 、强度等）不仅能够编码数字信号也能编码模拟信号。 一些概念ISIISI(interspike intervals)，激活间间隙，表示两次激活中间间隔的时间的长度。虽然每次激活的持续时间、幅度和形状可能都">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SNN[2]: Neural Coding">
+<meta property="og:url" content="http://yoursite.com/2020/07/05/SNN-2-Neural-Coding/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="SNN学习笔记2：神经编码大脑中的感知细胞在受到光、声音等外界刺激时，其动作电位的激活序列会呈现出一定的时序模式。神经编码认为大脑中的感知、认知等信息由神经元的激活表征，这些激活的各方面特征（时序 、强度等）不仅能够编码数字信号也能编码模拟信号。 一些概念ISIISI(interspike intervals)，激活间间隙，表示两次激活中间间隔的时间的长度。虽然每次激活的持续时间、幅度和形状可能都">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-07-05T02:56:20.000Z">
+<meta property="article:modified_time" content="2020-07-06T03:10:57.718Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="SNN, Deep Learning">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-SNN-2-Neural-Coding" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/05/SNN-2-Neural-Coding/" class="article-date">
+  <time datetime="2020-07-05T02:56:20.000Z" itemprop="datePublished">2020-07-05</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/AI/">AI</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      SNN[2]: Neural Coding
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="SNN学习笔记2：神经编码"><a href="#SNN学习笔记2：神经编码" class="headerlink" title="SNN学习笔记2：神经编码"></a>SNN学习笔记2：神经编码</h1><p>大脑中的感知细胞在受到光、声音等外界刺激时，其动作电位的激活序列会呈现出一定的时序模式。<a href="https://en.wikipedia.org/wiki/Neural_coding" target="_blank" rel="noopener">神经编码</a>认为大脑中的感知、认知等信息由神经元的激活表征，这些激活的各方面特征（时序 、强度等）不仅能够编码数字信号也能编码模拟信号。</p>
+<h2 id="一些概念"><a href="#一些概念" class="headerlink" title="一些概念"></a>一些概念</h2><h3 id="ISI"><a href="#ISI" class="headerlink" title="ISI"></a>ISI</h3><p>ISI(interspike intervals)，激活间间隙，表示两次激活中间间隔的时间的长度。虽然每次激活的持续时间、幅度和形状可能都有差异，但通常被处理为出现/不出现的点事件（point events）。</p>
+<h3 id="神经编码"><a href="#神经编码" class="headerlink" title="神经编码"></a>神经编码</h3><p>神经编码（Neural Encoding）将外界输入刺激映射到神经元的反应，主要关注的是理解神经元如何对刺激作出反应，并建模来尝试<strong>预测</strong>神经元对其它刺激的反应。</p>
+<h3 id="神经解码"><a href="#神经解码" class="headerlink" title="神经解码"></a>神经解码</h3><p>神经解码（Neural Decoding）关注的是编码的反向映射，也就是通过观察神经元的活动<strong>推导</strong>出对应的外界刺激。</p>
+<h2 id="一些神经编码的理论"><a href="#一些神经编码的理论" class="headerlink" title="一些神经编码的理论"></a>一些神经编码的理论</h2><p>一系列的神经脉冲中包含了丰富的信息，不同编码理论侧重有所不同，在信息精度/浓度上也各有取舍。对不同功能的神经元，适用的编码也会不同。例如，对于控制肌肉收缩的运动细胞，基本只关心脉冲的发射频率（firing rate）。而对于处理复杂认知任务（例如，视觉、听觉）的神经细胞，每个脉冲出现的精确时间都包含了信息。</p>
+<h3 id="频率编码（Rate-coding）"><a href="#频率编码（Rate-coding）" class="headerlink" title="频率编码（Rate coding）"></a>频率编码（Rate coding）</h3><p>频率编码模型将外界刺激的强度编码为脉冲的发射频率（firing rate），也就是外界的刺激越强，对应神经元的脉冲发射频率越高（通常是非线性变化）。频率编码假设外界刺激的绝大多数信息都包含在神经元的发射频率中，这是一种早期的编码方案，实验表明脉冲准确的时间中也包含了大量信息。</p>
+<p>NOTE：目前发射频率没有一个公认的定义，常见的定义有：1）随时间平均 2）多次实验平均。</p>
+<h4 id="频率编码：脉冲计数码率"><a href="#频率编码：脉冲计数码率" class="headerlink" title="频率编码：脉冲计数码率"></a>频率编码：脉冲计数码率</h4><p>脉冲计数码率（spike-count rate, a.k.a temporal average）由对一次实验中的脉冲数目进行计数，然后除以实验持续的时间得到。显然，这种平均只适合恒定或者变化较慢的外界刺激，对于变化较快的外界刺激意义不大。</p>
+<h4 id="频率编码：时间相关发射率"><a href="#频率编码：时间相关发射率" class="headerlink" title="频率编码：时间相关发射率"></a>频率编码：时间相关发射率</h4><p>时间相关发射率（time-dependent firing rate）定义为 $\frac{C_{t}^{t + \Delta t}spikes}{\Delta t}$,其中$C_t^{t + \Delta t}spikes$表示$t$到$\Delta t$之间的脉冲计数。和脉冲计数码率不同，时间相关发射率不仅可以处理常量刺激，也可以处理时间相关的刺激。</p>
+<p>NOTE: 时间相关发射率依赖于有多个独立神经元，每个神经元接收同一种刺激的假设。</p>
+<h3 id="时间编码（Temporal-coding）"><a href="#时间编码（Temporal-coding）" class="headerlink" title="时间编码（Temporal coding）"></a>时间编码（Temporal coding）</h3><p>与频率编码不同，在时间编码中，脉冲出现的准确时间或者发射频率的波动被认为是携带信息的。</p>
+<h4 id="时间编码：二元编码"><a href="#时间编码：二元编码" class="headerlink" title="时间编码：二元编码"></a>时间编码：二元编码</h4><p>用二元符号来标记单位时间内是否有脉冲，1表示有脉冲，0表示没有。利用二元编码，我们可以区分频率编码中无法区分的序列，例如：0001110011和1110001100两者虽然频率一致，但是脉冲的时序显然不一样。</p>
+<h4 id="时间编码：ISI"><a href="#时间编码：ISI" class="headerlink" title="时间编码：ISI"></a>时间编码：ISI</h4><p>ISI利用激活间的区间长度来编码激活序列。</p>
+<h4 id="时间编码：稀疏编码"><a href="#时间编码：稀疏编码" class="headerlink" title="时间编码：稀疏编码"></a>时间编码：稀疏编码</h4><p>对神经元的每次强激活单独编码，通常用线性生成模型来描述（Linear Generative Model）。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/05/SNN-2-Neural-Coding/" data-id="ckcbb9ucl0001ys1df2db6hs0" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/07/06/SNN-3-Synaptic-Plasticity/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          SNN[3]: Associative Learning
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/07/03/SNN-1-LIF/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">SNN[1]: LIF</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-compiler/" rel="tag">LLVM, compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mindspore-Python-Optimizer-C/" rel="tag">Mindspore, Python, Optimizer, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mood/" rel="tag">Mood</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance-C/" rel="tag">Performance, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow-Deep-Learning/" rel="tag">TensorFlow, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mind-hack/" rel="tag">mind-hack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%AA%E6%9E%81-rendering/" rel="tag">太极, rendering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/LLVM-compiler/" style="font-size: 10px;">LLVM, compiler</a> <a href="/tags/Mindspore-Python-Optimizer-C/" style="font-size: 10px;">Mindspore, Python, Optimizer, C++</a> <a href="/tags/Mood/" style="font-size: 10px;">Mood</a> <a href="/tags/Performance-C/" style="font-size: 10px;">Performance, C++</a> <a href="/tags/SNN-Deep-Learning/" style="font-size: 20px;">SNN, Deep Learning</a> <a href="/tags/TensorFlow-Deep-Learning/" style="font-size: 10px;">TensorFlow, Deep Learning</a> <a href="/tags/c/" style="font-size: 15px;">c++</a> <a href="/tags/mind-hack/" style="font-size: 10px;">mind-hack</a> <a href="/tags/pybind11-c-python/" style="font-size: 15px;">pybind11, c++, python</a> <a href="/tags/%E5%A4%AA%E6%9E%81-rendering/" style="font-size: 10px;">太极, rendering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/07/LLVM0/">LLVM0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/31/Taichi0/">Taichi0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/23/two-list-system/">two-list system</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/09/Python-Pass/">Python_Pass</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
