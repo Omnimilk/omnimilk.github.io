@@ -15,7 +15,7 @@
 <meta property="og:description" content="SNN学习笔记1：LIF什么是SNN？SNN（Spiking neural network，脉冲神经网络）号称是第三代神经网络, 与当前流行的神经网络的主要区别是将神经脉冲传播的动态过程纳入学习和推理中。SNN中的神经元不会在每次传播中都激活，而是只有当神经元的膜电位超过阈值时才激活，在激活时发射电脉冲（spikes，神经科学中常称作动作电位），这些电脉冲通过轴突传递给其它的神经元。 因此， 神经">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2020-07-03T09:15:25.000Z">
-<meta property="article:modified_time" content="2020-07-05T03:09:34.145Z">
+<meta property="article:modified_time" content="2021-04-24T15:10:40.810Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="SNN, Deep Learning">
 <meta name="twitter:card" content="summary">
@@ -99,16 +99,16 @@
 <script type="math/tex; mode=display">
 I(t) = C_m \frac{dV_m(t)}{dt}</script><p>$C_m$ 表示神经元的电容, 我们容易看出上式只是电容公式Q=CV两边同时对时间求导。</p>
 <p>此模型有如下性质：当有电流输入时，膜电位将会升高。</p>
-<h4 id="不应期"><a href="#不应期" class="headerlink" title="不应期"></a>不应期</h4><p>通过增加不应期（refractory period）$t_{ref}$可以使Integrate-and-fire模型更加精准。所谓不应期，就是在此期间神经元无法激活，这一现象在实际的神经元中已经被观察到，微观上可以由<a href="https://www.youtube.com/watch?v=Gsf9IB-wQdU" target="_blank" rel="noopener">钠钾离子通道的状态</a>来解释。</p>
-<p>不应期限制了神经元激活的频率，激活频率与不应期$t_{ref}$的关系如下：</p>
+<h4 id="不应期"><a href="#不应期" class="headerlink" title="不应期"></a>不应期</h4><p>通过增加不应期（refractory period）<script type="math/tex">t_{ref}</script>可以使Integrate-and-fire模型更加精准。所谓不应期，就是在此期间神经元无法激活，这一现象在实际的神经元中已经被观察到，微观上可以由<a href="https://www.youtube.com/watch?v=Gsf9IB-wQdU" target="_blank" rel="noopener">钠钾离子通道的状态</a>来解释。</p>
+<p>不应期限制了神经元激活的频率，激活频率与不应期<script type="math/tex">t_{ref}</script>的关系如下：</p>
 <script type="math/tex; mode=display">
 f(I) = \frac{I}{C_mV_{th} + t_{ref}I}</script><h4 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h4><p>一个显著的缺点是，上述模型没有实现时间相关记忆（time-dependent memory）,即如果这个模型收到一个远超阈值的信号时，会永远将此信号记在自己的膜电位中。</p>
 <h3 id="LIF"><a href="#LIF" class="headerlink" title="LIF"></a>LIF</h3><p><a href="https://en.wikipedia.org/wiki/Biological_neuron_model#Leaky_integrate-and-fire" target="_blank" rel="noopener">LIF</a>(Leaky integrate-and-fire)通过增加“漏电（Leaky）”项解决了Integrate-and-fire模型中缺少时间相关记忆的问题。模型的公式如下：</p>
 <script type="math/tex; mode=display">
-I(t) - \frac{V_m(t)}{R_m} = C_m \frac{dV_m(t)}{dt}</script><p>“漏电”项$\frac{V_m(t)}{R_m}$中的$R_m$表示膜电阻。</p>
+I(t) - \frac{V_m(t)}{R_m} = C_m \frac{dV_m(t)}{dt}</script><p>“漏电”项<script type="math/tex">\frac{V_m(t)}{R_m}</script>中的<script type="math/tex">R_m</script>表示膜电阻。</p>
 <p>公式蕴含了下面这些有趣的性质：</p>
 <ol>
-<li>激活神经元的输入电流必须超过$I_{th} = \frac{V_{th}}{R_m}$, 否则漏电项会导致膜电位泄露</li>
+<li>激活神经元的输入电流必须超过<script type="math/tex">I_{th} = \frac{V_{th}}{R_m}</script>, 否则漏电项会导致膜电位泄露</li>
 <li>大电流输入时，模型趋近于Integrate-and-fire+不应期</li>
 </ol>
 <h2 id="LIF-Nengo实现"><a href="#LIF-Nengo实现" class="headerlink" title="LIF: Nengo实现"></a>LIF: Nengo实现</h2><p>Nengo是一个SNN相关的库，利用Nengo可以很容易实现上述LIF模型。</p>
@@ -117,7 +117,7 @@ I(t) - \frac{V_m(t)}{R_m} = C_m \frac{dV_m(t)}{dt}</script><p>“漏电”项$\f
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/07/03/SNN-1-LIF/" data-id="ckcbb9uch0000ys1dhtq89m63" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/07/03/SNN-1-LIF/" data-id="cknvw7rp1000aw5w3gsa652s3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li></ul>
@@ -202,10 +202,6 @@ I(t) - \frac{V_m(t)}{R_m} = C_m \frac{dV_m(t)}{dt}</script><p>“漏电”项$\f
           </li>
         
           <li>
-            <a href="/2021/04/24/hello-world/">Hello World</a>
-          </li>
-        
-          <li>
             <a href="/2020/09/07/LLVM0/">LLVM0</a>
           </li>
         
@@ -215,6 +211,10 @@ I(t) - \frac{V_m(t)}{R_m} = C_m \frac{dV_m(t)}{dt}</script><p>“漏电”项$\f
         
           <li>
             <a href="/2020/08/23/two-list-system/">two-list system</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
           </li>
         
       </ul>
@@ -262,24 +262,5 @@ I(t) - \frac{V_m(t)}{R_m} = C_m \frac{dV_m(t)}{dt}</script><p>“漏电”项$\f
 
 
   </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-/!--
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
--->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-
 </body>
 </html>

@@ -15,7 +15,7 @@
 <meta property="og:description" content="右值引用和emplace这篇文章初衷是好奇push_back和emplace_back的区别，了解之后发现绕不开右值引用，在此一并记录一下。 右值引用右值引用（rvalue reference）是C++11中引入的新特性，显然是与C++11之前普通左值引用相对的一个概念。下面的右值引用的介绍很多参考自这篇文章。 左值与右值一个粗略的定义如下： 左值是一个可以出现在赋值符号（&#x3D;）左边或者右边的表达式">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2020-07-03T03:37:11.000Z">
-<meta property="article:modified_time" content="2020-07-03T08:40:48.139Z">
+<meta property="article:modified_time" content="2021-04-24T13:57:27.281Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="c++">
 <meta name="twitter:card" content="summary">
@@ -122,7 +122,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/07/03/rvalue-reference-and-emplace/" data-id="ckcbb9ud4000yys1d2plc2s6p" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/07/03/rvalue-reference-and-emplace/" data-id="cknvw7rpg0019w5w3cebdc503" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
@@ -207,10 +207,6 @@
           </li>
         
           <li>
-            <a href="/2021/04/24/hello-world/">Hello World</a>
-          </li>
-        
-          <li>
             <a href="/2020/09/07/LLVM0/">LLVM0</a>
           </li>
         
@@ -220,6 +216,10 @@
         
           <li>
             <a href="/2020/08/23/two-list-system/">two-list system</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
           </li>
         
       </ul>
@@ -267,24 +267,5 @@
 
 
   </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-/!--
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
--->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-
 </body>
 </html>

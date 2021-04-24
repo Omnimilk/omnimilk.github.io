@@ -15,7 +15,7 @@
 <meta property="og:description" content="SNN学习笔记2：神经编码大脑中的感知细胞在受到光、声音等外界刺激时，其动作电位的激活序列会呈现出一定的时序模式。神经编码认为大脑中的感知、认知等信息由神经元的激活表征，这些激活的各方面特征（时序 、强度等）不仅能够编码数字信号也能编码模拟信号。 一些概念ISIISI(interspike intervals)，激活间间隙，表示两次激活中间间隔的时间的长度。虽然每次激活的持续时间、幅度和形状可能都">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2020-07-05T02:56:20.000Z">
-<meta property="article:modified_time" content="2020-07-06T03:10:57.718Z">
+<meta property="article:modified_time" content="2021-04-24T15:10:52.165Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="SNN, Deep Learning">
 <meta name="twitter:card" content="summary">
@@ -101,7 +101,7 @@
 <h3 id="频率编码（Rate-coding）"><a href="#频率编码（Rate-coding）" class="headerlink" title="频率编码（Rate coding）"></a>频率编码（Rate coding）</h3><p>频率编码模型将外界刺激的强度编码为脉冲的发射频率（firing rate），也就是外界的刺激越强，对应神经元的脉冲发射频率越高（通常是非线性变化）。频率编码假设外界刺激的绝大多数信息都包含在神经元的发射频率中，这是一种早期的编码方案，实验表明脉冲准确的时间中也包含了大量信息。</p>
 <p>NOTE：目前发射频率没有一个公认的定义，常见的定义有：1）随时间平均 2）多次实验平均。</p>
 <h4 id="频率编码：脉冲计数码率"><a href="#频率编码：脉冲计数码率" class="headerlink" title="频率编码：脉冲计数码率"></a>频率编码：脉冲计数码率</h4><p>脉冲计数码率（spike-count rate, a.k.a temporal average）由对一次实验中的脉冲数目进行计数，然后除以实验持续的时间得到。显然，这种平均只适合恒定或者变化较慢的外界刺激，对于变化较快的外界刺激意义不大。</p>
-<h4 id="频率编码：时间相关发射率"><a href="#频率编码：时间相关发射率" class="headerlink" title="频率编码：时间相关发射率"></a>频率编码：时间相关发射率</h4><p>时间相关发射率（time-dependent firing rate）定义为 $\frac{C_{t}^{t + \Delta t}spikes}{\Delta t}$,其中$C_t^{t + \Delta t}spikes$表示$t$到$\Delta t$之间的脉冲计数。和脉冲计数码率不同，时间相关发射率不仅可以处理常量刺激，也可以处理时间相关的刺激。</p>
+<h4 id="频率编码：时间相关发射率"><a href="#频率编码：时间相关发射率" class="headerlink" title="频率编码：时间相关发射率"></a>频率编码：时间相关发射率</h4><p>时间相关发射率（time-dependent firing rate）定义为<script type="math/tex">\frac{C_{t}^{t + \Delta t}spikes}{\Delta t}</script>,其中<script type="math/tex">C_t^{t + \Delta t}spikes</script>表示<script type="math/tex">t</script>到<script type="math/tex">\Delta t</script>之间的脉冲计数。和脉冲计数码率不同，时间相关发射率不仅可以处理常量刺激，也可以处理时间相关的刺激。</p>
 <p>NOTE: 时间相关发射率依赖于有多个独立神经元，每个神经元接收同一种刺激的假设。</p>
 <h3 id="时间编码（Temporal-coding）"><a href="#时间编码（Temporal-coding）" class="headerlink" title="时间编码（Temporal coding）"></a>时间编码（Temporal coding）</h3><p>与频率编码不同，在时间编码中，脉冲出现的准确时间或者发射频率的波动被认为是携带信息的。</p>
 <h4 id="时间编码：二元编码"><a href="#时间编码：二元编码" class="headerlink" title="时间编码：二元编码"></a>时间编码：二元编码</h4><p>用二元符号来标记单位时间内是否有脉冲，1表示有脉冲，0表示没有。利用二元编码，我们可以区分频率编码中无法区分的序列，例如：0001110011和1110001100两者虽然频率一致，但是脉冲的时序显然不一样。</p>
@@ -111,7 +111,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/07/05/SNN-2-Neural-Coding/" data-id="ckcbb9ucl0001ys1df2db6hs0" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/07/05/SNN-2-Neural-Coding/" data-id="cknvw7rp2000cw5w39gpb281z" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li></ul>
@@ -196,10 +196,6 @@
           </li>
         
           <li>
-            <a href="/2021/04/24/hello-world/">Hello World</a>
-          </li>
-        
-          <li>
             <a href="/2020/09/07/LLVM0/">LLVM0</a>
           </li>
         
@@ -209,6 +205,10 @@
         
           <li>
             <a href="/2020/08/23/two-list-system/">two-list system</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
           </li>
         
       </ul>
@@ -256,24 +256,5 @@
 
 
   </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-/!--
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
--->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-
 </body>
 </html>

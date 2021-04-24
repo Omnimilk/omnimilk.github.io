@@ -15,7 +15,7 @@
 <meta property="og:description" content="OutOfLine模式提升C++代码访存局部性公司内网看到一个提升C++代码性能的模式（源头是这篇blog），能够以一种容易维护的方式很大程度提升访存的局部性，感觉挺有意思，记录一下。 从例子说起假设你的系统需要打开大量的路径(文件、sockets，pipes)，对于这些路径你需要打开、处理、关闭对应的文件描述符并取消文件描述符和对应路径之间的联系。 对于这样的需求，我们可能写出下面的代码： 12">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2020-08-14T02:54:58.000Z">
-<meta property="article:modified_time" content="2020-08-23T12:08:21.480Z">
+<meta property="article:modified_time" content="2021-04-24T13:57:27.281Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Performance, C++">
 <meta name="twitter:card" content="summary">
@@ -123,7 +123,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/" data-id="cke71smb80000eq79clr7hvia" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/" data-id="cknvw7ros0001w5w3eq816ymo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Performance-C/" rel="tag">Performance, C++</a></li></ul>
@@ -208,10 +208,6 @@
           </li>
         
           <li>
-            <a href="/2021/04/24/hello-world/">Hello World</a>
-          </li>
-        
-          <li>
             <a href="/2020/09/07/LLVM0/">LLVM0</a>
           </li>
         
@@ -221,6 +217,10 @@
         
           <li>
             <a href="/2020/08/23/two-list-system/">two-list system</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
           </li>
         
       </ul>
@@ -268,24 +268,5 @@
 
 
   </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-/!--
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
--->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-
 </body>
 </html>
