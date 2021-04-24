@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>C++ Performance Trick: OutOfLine Pattern | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="OutOfLine模式提升C++代码访存局部性公司内网看到一个提升C++代码性能的模式（源头是这篇blog），能够以一种容易维护的方式很大程度提升访存的局部性，感觉挺有意思，记录一下。 从例子说起假设你的系统需要打开大量的路径(文件、sockets，pipes)，对于这些路径你需要打开、处理、关闭对应的文件描述符并取消文件描述符和对应路径之间的联系。 对于这样的需求，我们可能写出下面的代码： 12">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ Performance Trick: OutOfLine Pattern">
+<meta property="og:url" content="http://yoursite.com/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="OutOfLine模式提升C++代码访存局部性公司内网看到一个提升C++代码性能的模式（源头是这篇blog），能够以一种容易维护的方式很大程度提升访存的局部性，感觉挺有意思，记录一下。 从例子说起假设你的系统需要打开大量的路径(文件、sockets，pipes)，对于这些路径你需要打开、处理、关闭对应的文件描述符并取消文件描述符和对应路径之间的联系。 对于这样的需求，我们可能写出下面的代码： 12">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-08-14T02:54:58.000Z">
+<meta property="article:modified_time" content="2020-08-23T12:08:21.480Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Performance, C++">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="posts-C-Performance-Trick-OutOfLine-Pattern" class="article article-type-posts" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/" class="article-date">
+  <time datetime="2020-08-14T02:54:58.000Z" itemprop="datePublished">2020-08-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      C++ Performance Trick: OutOfLine Pattern
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="OutOfLine模式提升C-代码访存局部性"><a href="#OutOfLine模式提升C-代码访存局部性" class="headerlink" title="OutOfLine模式提升C++代码访存局部性"></a>OutOfLine模式提升C++代码访存局部性</h1><p>公司内网看到一个提升C++代码性能的模式（源头是<a href="https://blog.headlandstech.com/2018/08/15/outofline-a-memory-locality-pattern-for-high-performance-c/" target="_blank" rel="noopener">这篇blog</a>），能够以一种容易维护的方式很大程度提升访存的局部性，感觉挺有意思，记录一下。</p>
+<h2 id="从例子说起"><a href="#从例子说起" class="headerlink" title="从例子说起"></a>从例子说起</h2><p>假设你的系统需要打开大量的路径(文件、sockets，pipes)，对于这些路径你需要打开、处理、关闭对应的文件描述符并取消文件描述符和对应路径之间的联系。</p>
+<p>对于这样的需求，我们可能写出下面的代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UnlinkingFD</span> &#123;</span></span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">string</span> path;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">int</span> fd;</span><br><span class="line"></span><br><span class="line">  UnlinkingFD(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; p) : path(p) &#123;</span><br><span class="line">    fd = <span class="built_in">open</span>(p.c_str(), O_RDWR, <span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  ~UnlinkingFD() &#123;</span><br><span class="line">      <span class="built_in">close</span>(fd); </span><br><span class="line">      unlink(path.c_str());</span><br><span class="line">  &#125;</span><br><span class="line">  UnlinkingFD(<span class="keyword">const</span> UnlinkingFD&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>每个打开的路径对应一个上面的对象保存对应的路径和文件描述符，大量的打开的文件描述符可能以<code>UnlinkingFD</code>对象形式保存在数组中。上面的代码在功能和逻辑上是完好的，RAII也会在对象生命周期结束时关掉文件描述符并取消和对应路径之间的关联。</p>
+<h3 id="场景-amp-性能分析"><a href="#场景-amp-性能分析" class="headerlink" title="场景&amp;性能分析"></a>场景&amp;性能分析</h3><p>假设我们经常需要用到<code>fd</code>，但是<code>path</code>只在对象生命周期结束时使用。因为一个上面的<code>UnlinkingFD</code>对象需要占用40Bytes，而我们常用的<code>fd</code>只占用了其中的4Bytes，这意味着我们在访问<code>UnlinkingFD</code>数组时cache miss的概率大大提升。</p>
+<h3 id="方案1"><a href="#方案1" class="headerlink" title="方案1"></a>方案1</h3><p>将<code>array-of-structs</code>变为<code>struct-of-arrays</code>，这当然可以帮助提升性能，但是我们将无法使用RAII来帮我们做资源管理，单一的fd无法及时得到释放。</p>
+<h3 id="方案2"><a href="#方案2" class="headerlink" title="方案2"></a>方案2</h3><p><code>UnlinkingFD</code>对象中不直接保存<code>string</code>对象，而是使用一个<code>unique_ptr</code>指针。这样一个<code>UnlinkingFD</code>对象就从40Bytes降低到了16Bytes，降低了cache miss的概率。</p>
+<h3 id="方案3：OutOfLine模式"><a href="#方案3：OutOfLine模式" class="headerlink" title="方案3：OutOfLine模式"></a>方案3：OutOfLine模式</h3><p>OutOfLine模式可以帮我们将像<code>path</code>这样的冷数据完全移到对象之外，但是仍然保留RAII为我们管理资源。</p>
+<h4 id="OutOfLine用法"><a href="#OutOfLine用法" class="headerlink" title="OutOfLine用法"></a>OutOfLine用法</h4><p><code>OutOfLine</code>类是一个<a href="https://omnimilk.github.io/2020/07/01/expression-template/" target="_blank" rel="noopener">静态多态</a>的基类。 使用此基类时要传入两个模板参数，第一个模板参数为继承的子类，第二个模板参数为要挂在“热”对象上的冷数据的类型。</p>
+<p>例如，对于上面的<code>UnlinkingFD</code>类，改写后的用法如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">UnlinkingFD</span> :</span> <span class="keyword">private</span> OutOfLine&lt;UnlinkingFD, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; &#123;</span><br><span class="line">  <span class="keyword">int</span> fd;</span><br><span class="line"></span><br><span class="line">  UnlinkingFD(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; p) : OutOfLine&lt;UnlinkingFD, <span class="built_in">std</span>::<span class="built_in">string</span>&gt;(p) &#123;</span><br><span class="line">    fd = <span class="built_in">open</span>(p.c_str(), O_RDWR, <span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  ~UnlinkingFD();</span><br><span class="line">  UnlinkingFD(<span class="keyword">const</span> UnlinkingFD&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><p>OutOfLine模式将冷数据从对象中剥离出去的思路时通过一个全局对象将“热”对象的指针和冷数据关联起来。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">FastData</span>, <span class="title">class</span> <span class="title">ColdData</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">class</span> <span class="title">OutOfLine</span> &#123;</span></span><br><span class="line"><span class="keyword">inline</span> <span class="keyword">static</span> <span class="built_in">std</span>::<span class="built_in">map</span>&lt;OutOfLine <span class="keyword">const</span>*, <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;ColdData&gt;&gt; global_map_;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// 每次创建“热”数据对象时，将热数据对象的指针关联到对应的冷数据上</span></span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span>... <span class="title">TArgs</span>&gt;</span></span><br><span class="line"><span class="class">    <span class="title">explicit</span> <span class="title">OutOfLine</span>(<span class="title">TArgs</span>&amp;&amp;.. <span class="title">args</span>) &#123;</span></span><br><span class="line">        global_map_[<span class="keyword">this</span>] = <span class="built_in">std</span>::make_unique&lt;ColdData&gt;(<span class="built_in">std</span>::forward&lt;TArgs&gt;(args)...);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// “热”数据对象析构时，将全局映射中对应的冷数据对象也清理掉</span></span><br><span class="line">    ~OutOfLine() &#123;global_map_.erase(<span class="keyword">this</span>);&#125;</span><br><span class="line">    <span class="comment">// move “热”数据对象时，将对应的冷数据重新关联（此后不应该在通过旧的“热”数据对象来找冷数据）</span></span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">OutOfLine</span><span class="params">(OutOfLine&amp;&amp; other)</span> </span>&#123; *<span class="keyword">this</span> = other;&#125;</span><br><span class="line">    OutOfLine&amp; <span class="keyword">operator</span>=(OutOfLine&amp;&amp; other) &#123;</span><br><span class="line">        global_map_[<span class="keyword">this</span>] = <span class="built_in">std</span>::<span class="built_in">move</span>(global_map_[&amp;other]);</span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// non-copyable for simplicity</span></span><br><span class="line">    OutOfLine(OutOfLine <span class="keyword">const</span>&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">    OutOfLine&amp; <span class="keyword">operator</span>=(OutOfLine <span class="keyword">const</span>&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">    <span class="comment">// 获取当前“热”对象对应的冷数据</span></span><br><span class="line">    <span class="function">ColdData&amp; <span class="title">cold</span><span class="params">()</span> <span class="keyword">noexcept</span> </span>&#123; <span class="keyword">return</span> *global_map_[<span class="keyword">this</span>]; &#125;</span><br><span class="line">    <span class="function">ColdData <span class="keyword">const</span>&amp; <span class="title">cold</span><span class="params">()</span> <span class="keyword">const</span> <span class="keyword">noexcept</span> </span>&#123; <span class="keyword">return</span> *global_map_[<span class="keyword">this</span>]; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="性能-amp-资源管理"><a href="#性能-amp-资源管理" class="headerlink" title="性能&amp;资源管理"></a>性能&amp;资源管理</h4><p>静态继承自<code>OutOfLine</code>类的<code>UnlinkingFD</code>现在只有4Bytes， 因此需要高频访问的<code>UnlinkingFD</code>对象的数组的cache miss被降到最低。同时RAII会同时替我们管理“热”数据对象及对应的冷数据。</p>
+<h4 id="NOTE-构造函数初始化顺序"><a href="#NOTE-构造函数初始化顺序" class="headerlink" title="NOTE: 构造函数初始化顺序"></a>NOTE: 构造函数初始化顺序</h4><p>上面静态继承的过程实际上一定程度上限定了热数据和冷数据构造的顺序，因为C++构造函数初始化的顺序如下：</p>
+<ol>
+<li>构造虚拟基类，继承自多个虚拟基类时，按照被继承的顺序构造</li>
+<li>构造非虚拟基类，继承自多个非虚拟基类时，按照被继承的顺序构造</li>
+<li>构造成员对象，按照成员对象的声明顺序构造</li>
+<li>调用类自身的构造函数</li>
+</ol>
+<p>因此，当我们构造一个“热”数据对象时，会首先构造<code>OutOfLine</code>基类（此时<code>OutOfLine</code>类的构造函数中会构造冷数据对象），然后构造“热”数据对象。这就意味着<strong><em>冷数据对象的构造不能依赖于“热”数据对象</em></strong>。</p>
+<h4 id="控制初始化顺序"><a href="#控制初始化顺序" class="headerlink" title="控制初始化顺序"></a>控制初始化顺序</h4><p>当冷数据对象的初始化依赖于热数据对象时，我们需要hack一下初始化的顺序。方法如下：为<code>OutOfLine</code>静态基类提供一个特别的构造函数，这个构造函数以tag类<code>TwoPhaseInit</code>为入参。当我们调用这个构造函数时，冷数据不会被初始化，此时处于一种半构造的状态。然后我们在“热”数据初始化之后显式的调用<code>init_cold_data</code>来初始化冷数据。释放时同理可以引入<code>release_cold_data</code>来hack析构的顺序。代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">TwoPhaseInit</span> &#123;</span>&#125;;</span><br><span class="line">  OutOfLine(TwoPhaseInit)&#123;&#125;</span><br><span class="line">  <span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span>... <span class="title">TArgs</span>&gt;</span></span><br><span class="line"><span class="class">  <span class="title">void</span> <span class="title">init_cold_data</span>(<span class="title">TArgs</span>&amp;&amp;... <span class="title">args</span>) &#123;</span></span><br><span class="line">    global_map_.<span class="built_in">find</span>(<span class="keyword">this</span>)-&gt;second = <span class="built_in">std</span>::make_unique&lt;ColdData&gt;(<span class="built_in">std</span>::forward&lt;TArgs&gt;(args)...);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">release_cold_data</span><span class="params">()</span> </span>&#123; global_map_[<span class="keyword">this</span>].reset(); &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="性能测试"><a href="#性能测试" class="headerlink" title="性能测试"></a>性能测试</h3><h4 id="OutOfLine代码"><a href="#OutOfLine代码" class="headerlink" title="OutOfLine代码"></a><code>OutOfLine</code>代码</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> once</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;memory&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">FastData</span>, <span class="title">class</span> <span class="title">ColdData</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">class</span> <span class="title">OutOfLine</span> &#123;</span></span><br><span class="line">  <span class="keyword">inline</span> <span class="keyword">static</span> <span class="built_in">std</span>::<span class="built_in">map</span>&lt;OutOfLine <span class="keyword">const</span>*, <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;ColdData&gt;&gt; global_map_;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span>... <span class="title">TArgs</span>&gt;</span></span><br><span class="line"><span class="class">  <span class="title">OutOfLine</span>(<span class="title">TArgs</span>&amp;&amp;... <span class="title">args</span>) :</span> OutOfLine(TwoPhaseInit()) &#123;</span><br><span class="line">    init_cold_data(<span class="built_in">std</span>::forward&lt;TArgs&gt;(args)...);</span><br><span class="line">  &#125;</span><br><span class="line">  ~OutOfLine() &#123; global_map_.erase(<span class="keyword">this</span>); &#125;</span><br><span class="line">  <span class="function"><span class="keyword">explicit</span> <span class="title">OutOfLine</span><span class="params">(OutOfLine&amp;&amp; other)</span> : <span class="title">OutOfLine</span><span class="params">(OutOfLine::TwoPhaseInit())</span> </span>&#123; (*<span class="keyword">this</span>) = <span class="built_in">std</span>::<span class="built_in">move</span>(other); &#125;</span><br><span class="line">  OutOfLine&amp; <span class="keyword">operator</span>=(OutOfLine&amp;&amp; other) &#123;</span><br><span class="line">    global_map_[<span class="keyword">this</span>] = <span class="built_in">std</span>::<span class="built_in">move</span>(global_map_[&amp;other]);</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  OutOfLine(OutOfLine <span class="keyword">const</span>&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">  OutOfLine&amp; <span class="keyword">operator</span>=(OutOfLine <span class="keyword">const</span>&amp;) = <span class="keyword">delete</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function">ColdData&amp; <span class="title">cold</span><span class="params">()</span> <span class="keyword">noexcept</span> </span>&#123; <span class="keyword">return</span> *global_map_[<span class="keyword">this</span>]; &#125;</span><br><span class="line">  <span class="function">ColdData <span class="keyword">const</span>&amp; <span class="title">cold</span><span class="params">()</span> <span class="keyword">const</span> <span class="keyword">noexcept</span> </span>&#123; <span class="keyword">return</span> *global_map_[<span class="keyword">this</span>]; &#125;</span><br><span class="line"></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">TwoPhaseInit</span> &#123;</span>&#125;;</span><br><span class="line">  OutOfLine(TwoPhaseInit) &#123; global_map_.try_emplace(<span class="keyword">this</span>); &#125;</span><br><span class="line">  <span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span>... <span class="title">TArgs</span>&gt;</span></span><br><span class="line"><span class="class">  <span class="title">void</span> <span class="title">init_cold_data</span>(<span class="title">TArgs</span>&amp;&amp;... <span class="title">args</span>) &#123;</span></span><br><span class="line">    global_map_.<span class="built_in">find</span>(<span class="keyword">this</span>)-&gt;second = <span class="built_in">std</span>::make_unique&lt;ColdData&gt;(<span class="built_in">std</span>::forward&lt;TArgs&gt;(args)...);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">release_cold_data</span><span class="params">()</span> </span>&#123; global_map_[<span class="keyword">this</span>].reset(); &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="benchmark代码"><a href="#benchmark代码" class="headerlink" title="benchmark代码"></a>benchmark代码</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ --std=c++1z -Wall -Wextra -O3 -o ool_benchmark ool_benchmark.cpp</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"out_of_line.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Deomonstrates keeping the cold data in the object with the fast data</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Together</span> &#123;</span></span><br><span class="line">  <span class="built_in">std</span>::<span class="keyword">uint32_t</span> value;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">string</span> metadata;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Demonstrates "giving up" and just not storing the associated cold-data</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">OnlyFastData</span> &#123;</span></span><br><span class="line">  <span class="built_in">std</span>::<span class="keyword">uint32_t</span> value;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Demonstrates using OutOfLine to store the cold data</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">WithOOL</span> :</span> <span class="keyword">public</span> OutOfLine&lt;WithOOL, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; &#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="keyword">uint32_t</span> value;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// The crux of the optimization is that there's no space-overhead</span></span><br><span class="line"><span class="keyword">static_assert</span>(<span class="keyword">sizeof</span>(WithOOL) == <span class="keyword">sizeof</span>(OnlyFastData));</span><br><span class="line"></span><br><span class="line"><span class="comment">// We synthesize the data up-front so the generation can't interfere with the measured behavior in any way</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">Data</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">auto</span> <span class="title">make_data</span>() &#123;</span></span><br><span class="line">  srand(<span class="number">20180101</span>);</span><br><span class="line">  <span class="function"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Data&gt; <span class="title">data</span><span class="params">(<span class="number">10000000</span>)</span></span>;</span><br><span class="line">  <span class="keyword">for</span> (Data&amp; d : data) &#123; d.value = rand(); &#125;</span><br><span class="line">  <span class="keyword">return</span> data;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// We time to measure throughput of touching all the fast data once in sequence</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">Data</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">trial</span>(<span class="title">const</span> <span class="title">char</span>* <span class="title">const</span> <span class="title">name</span>, <span class="title">const</span> <span class="title">Data</span>&amp; <span class="title">data</span>, <span class="title">const</span> <span class="title">bool</span> <span class="title">print</span>) &#123;</span></span><br><span class="line">  <span class="built_in">std</span>::<span class="keyword">uint32_t</span> <span class="built_in">running</span> = <span class="number">0U</span>;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> before = <span class="built_in">std</span>::chrono::system_clock::now();</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; d : data) &#123; <span class="built_in">running</span> += d.value; &#125;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> after = <span class="built_in">std</span>::chrono::system_clock::now();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">print</span>) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; name &lt;&lt; <span class="string">" took "</span> &lt;&lt; (after - before).count() &lt;&lt; <span class="string">"ns and "</span> &lt;&lt; <span class="built_in">running</span></span><br><span class="line">              &lt;&lt; <span class="string">" is a value I don't want optimized away"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// We generate all the datasets up front, to keep the effects of the allocator distant</span></span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> together  = make_data&lt;Together&gt;();</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> only_fast = make_data&lt;OnlyFastData&gt;();</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> with_ool  = make_data&lt;WithOOL&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// We run each trial twice, recording the results only the second time. The idea is to give a fair comparison, where</span></span><br><span class="line">  <span class="comment">// all 3 options have their caches primed and nobody thus has data fresher from the allocation.</span></span><br><span class="line">  trial(<span class="string">"With cold data in-line (original)               "</span>, together, <span class="literal">false</span>);</span><br><span class="line">  trial(<span class="string">"With cold data in-line (original)               "</span>, together, <span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">  trial(<span class="string">"With cold data thrown away (best-case scenario) "</span>, only_fast, <span class="literal">false</span>);</span><br><span class="line">  trial(<span class="string">"With cold data thrown away (best-case scenario) "</span>, only_fast, <span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">  trial(<span class="string">"With OutOfLIne                                  "</span>, with_ool, <span class="literal">false</span>);</span><br><span class="line">  trial(<span class="string">"With OutOfLIne                                  "</span>, with_ool, <span class="literal">true</span>);</span><br><span class="line"><span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h4><p>注意map的<code>try_emplace</code>方法是C++17引入的新特性，编译命令如下：<code>g++ benchmark.cpp -o benchmark -std=c++17</code>。在我自己的笔记本上运行的结果如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">With cold data in-line (original)                took 82936589ns and 3350498669 is a value I don&#39;t want optimized away</span><br><span class="line">With cold data thrown away (best-case scenario)  took 74243139ns and 3350498669 is a value I don&#39;t want optimized away</span><br><span class="line">With OutOfLIne                                   took 73445932ns and 3350498669 is a value I don&#39;t want optimized away</span><br></pre></td></tr></table></figure>
+<p>加速效果没有原始博客中的那么大，但付出的成本近乎免费，因此在性能优化时是很值得考虑的一个选项。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/" data-id="cke71smb80000eq79clr7hvia" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Performance-C/" rel="tag">Performance, C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/08/23/two-list-system/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          two-list system
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/08/09/Python-Pass/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Python_Pass</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-compiler/" rel="tag">LLVM, compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mindspore-Python-Optimizer-C/" rel="tag">Mindspore, Python, Optimizer, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mood/" rel="tag">Mood</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance-C/" rel="tag">Performance, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow-Deep-Learning/" rel="tag">TensorFlow, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/manimgl/" rel="tag">manimgl</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mind-hack/" rel="tag">mind-hack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%AA%E6%9E%81-rendering/" rel="tag">太极, rendering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/LLVM-compiler/" style="font-size: 10px;">LLVM, compiler</a> <a href="/tags/Mindspore-Python-Optimizer-C/" style="font-size: 10px;">Mindspore, Python, Optimizer, C++</a> <a href="/tags/Mood/" style="font-size: 10px;">Mood</a> <a href="/tags/Performance-C/" style="font-size: 10px;">Performance, C++</a> <a href="/tags/SNN-Deep-Learning/" style="font-size: 20px;">SNN, Deep Learning</a> <a href="/tags/TensorFlow-Deep-Learning/" style="font-size: 10px;">TensorFlow, Deep Learning</a> <a href="/tags/c/" style="font-size: 15px;">c++</a> <a href="/tags/manimgl/" style="font-size: 10px;">manimgl</a> <a href="/tags/mind-hack/" style="font-size: 10px;">mind-hack</a> <a href="/tags/pybind11-c-python/" style="font-size: 15px;">pybind11, c++, python</a> <a href="/tags/%E5%A4%AA%E6%9E%81-rendering/" style="font-size: 10px;">太极, rendering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">April 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2021/04/24/manimgl-install/">manimgl install</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/07/LLVM0/">LLVM0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/31/Taichi0/">Taichi0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/23/two-list-system/">two-list system</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+/!--
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+</body>
+</html>

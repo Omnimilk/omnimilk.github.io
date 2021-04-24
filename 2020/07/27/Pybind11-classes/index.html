@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Pybind11 classes | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Pybind11 class绑定最近工作需要用到Pybind11 class绑定中一些较为高级的特性（虚函数、重载、继承），在此整理记录一下。 基本用法class绑定对应上一篇中的第一种场景，即将C++原生类型通过class_函数向Python暴露。下面用一个小例子展示class绑定最基本的用法： 1234567891011121314151617#include &lt;pybind11&#x2F;pyb">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pybind11 classes">
+<meta property="og:url" content="http://yoursite.com/2020/07/27/Pybind11-classes/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Pybind11 class绑定最近工作需要用到Pybind11 class绑定中一些较为高级的特性（虚函数、重载、继承），在此整理记录一下。 基本用法class绑定对应上一篇中的第一种场景，即将C++原生类型通过class_函数向Python暴露。下面用一个小例子展示class绑定最基本的用法： 1234567891011121314151617#include &lt;pybind11&#x2F;pyb">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-07-27T06:10:51.000Z">
+<meta property="article:modified_time" content="2020-07-27T11:51:53.404Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="pybind11, c++, python">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Pybind11-classes" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/27/Pybind11-classes/" class="article-date">
+  <time datetime="2020-07-27T06:10:51.000Z" itemprop="datePublished">2020-07-27</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Pybind11 classes
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Pybind11-class绑定"><a href="#Pybind11-class绑定" class="headerlink" title="Pybind11 class绑定"></a>Pybind11 class绑定</h1><p>最近工作需要用到Pybind11 class绑定中一些较为高级的特性（虚函数、重载、继承），在此整理记录一下。</p>
+<h2 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2><p>class绑定对应<a href="https://omnimilk.github.io/2020/07/27/Pybind11-Type-Conversions/" target="_blank" rel="noopener">上一篇</a>中的第一种场景，即将C++原生类型通过<code>class_</code>函数向Python暴露。下面用一个小例子展示class绑定最基本的用法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pybind11/pybind11.h&gt;</span></span></span><br><span class="line"><span class="keyword">namespace</span> py = pybind11;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Pet</span> &#123;</span></span><br><span class="line">    Pet(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name) : name(name) &#123; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setName</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name_)</span> </span>&#123; name = name_; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;<span class="title">getName</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> name; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">PYBIND11_MODULE(example, m) &#123;</span><br><span class="line">    py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">        .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">        .def(<span class="string">"setName"</span>, &amp;Pet::setName)</span><br><span class="line">        .def(<span class="string">"getName"</span>, &amp;Pet::getName);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的代码向Python暴露了<code>Pet</code>类，其中有三个方法：<code>__init__</code>, <code>setName</code>, <code>getName</code>。</p>
+<h3 id="设置关键字参数和默认参数"><a href="#设置关键字参数和默认参数" class="headerlink" title="设置关键字参数和默认参数"></a>设置关键字参数和默认参数</h3><p>在def函数时可以添加参数的名字及设置默认值。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pybind11/pybind11.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> i, <span class="keyword">int</span> j)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> i + j;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">PYBIND11_MODULE(example, m) &#123;</span><br><span class="line">  <span class="comment">//m.def("add", &amp;add, "A function which adds two numbers");</span></span><br><span class="line">  <span class="comment">// 变为关键字参数</span></span><br><span class="line">  m.def(<span class="string">"add"</span>, &amp;add, <span class="string">"A function which adds two numbers"</span>, py::arg(<span class="string">"i"</span>), py::arg(<span class="string">"j"</span>));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// python调用：example.add(i=1,  j=2)</span></span><br></pre></td></tr></table></figure>
+<p>设置默认值类似（NOTE: C++接口中定义的默认值不会自动捕获，需要bind时设置）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PYBIND11_MODULE(example, m) &#123;</span><br><span class="line">  <span class="comment">// 设置参数默认值</span></span><br><span class="line">  m.def(<span class="string">"add"</span>, &amp;add, <span class="string">"A function which adds two numbers"</span>, py::arg(<span class="string">"i"</span>) = <span class="number">1</span>, py::arg(<span class="string">"j"</span>) = <span class="number">2</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="绑定Lambda函数"><a href="#绑定Lambda函数" class="headerlink" title="绑定Lambda函数"></a>绑定Lambda函数</h3><p>上面的方法绑定是将Python方法绑定到方法指针上，实际上可以用Lambda函数替换。例如，给Pet类增加一个<code>__repr__</code>方法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">    .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">    .def(<span class="string">"setName"</span>, &amp;Pet::setName)</span><br><span class="line">    .def(<span class="string">"getName"</span>, &amp;Pet::getName)</span><br><span class="line">    .def(<span class="string">"__repr__"</span>,</span><br><span class="line">        [](<span class="keyword">const</span> Pet &amp;a) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"&lt;example.Pet named '"</span> + a.name + <span class="string">"'&gt;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    );</span><br></pre></td></tr></table></figure>
+<h3 id="绑定成员变量"><a href="#绑定成员变量" class="headerlink" title="绑定成员变量"></a>绑定成员变量</h3><p>C++中公有成员变量可以绑定为Python中可以读写的attributes（const成员绑定为只读attributes），例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">PYBIND11_MODULE(example, m) &#123;</span><br><span class="line">    py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">        .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">        .def(<span class="string">"setName"</span>, &amp;Pet::setName)</span><br><span class="line">        .def(<span class="string">"getName"</span>, &amp;Pet::getName)</span><br><span class="line">        .def_readwrite(<span class="string">"name"</span>, &amp;Pet::name); <span class="comment">//公有非const成员变量</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Python中调用：</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p = example.Pet("Molly")</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p.name</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p.name = "Charly"</span></span><br></pre></td></tr></table></figure>
+<p>私有成员变量可以通过绑定C++中的getter和setter成为Python中的property：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">  .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">  .def_property(<span class="string">"name"</span>, &amp;Pet::getName, &amp;Pet::setName);</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+<p>类似的方法还有：<code>def_readwrite_static()</code>, <code>def_readonly_static()</code>, <code>def_property_static()</code>, <code>def_property_readonly_static()</code></p>
+<p>NOTE: Python可以动态的添加属性，绑定时也可以使能C++暴露的类在Python中支持动态属性：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// py::dynamic_attr()支持动态属性</span></span><br><span class="line">py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>, py::dynamic_attr())</span><br><span class="line">    .def(py::init&lt;&gt;())</span><br><span class="line">    .def_readwrite(<span class="string">"name"</span>, &amp;Pet::name);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Python中动态向Pet添加属性</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p = example.Pet()</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p.name = "charly"</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p.age = 2 # 动态添加age属性</span></span><br></pre></td></tr></table></figure>
+<h3 id="保持继承关系"><a href="#保持继承关系" class="headerlink" title="保持继承关系"></a>保持继承关系</h3><p>C++中的继承关系有两种方式保留到暴露到Python的类中，下面以一个例子说明。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Pet</span> &#123;</span></span><br><span class="line">    Pet(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name) : name(name) &#123; &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Dog</span> :</span> Pet &#123;</span><br><span class="line">    Dog(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name) : Pet(name) &#123; &#125;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">bark</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> <span class="string">"woof!"</span>; &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>第一种方法是子类暴露时在<code>class_</code>的模板中指定基类</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">   .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">   .def_readwrite(<span class="string">"name"</span>, &amp;Pet::name);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Method 1: template parameter:</span></span><br><span class="line">py::class_&lt;Dog, Pet <span class="comment">/* &lt;- specify C++ parent type */</span>&gt;(m, <span class="string">"Dog"</span>)</span><br><span class="line">    .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">    .def(<span class="string">"bark"</span>, &amp;Dog::bark);</span><br></pre></td></tr></table></figure>
+<p>第二种方法是在子类暴露时在<code>class_</code>的参数中传入基类的<code>class_</code>闭包</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">py::class_&lt;Pet&gt; <span class="title">pet</span><span class="params">(m, <span class="string">"Pet"</span>)</span></span>;</span><br><span class="line">pet.def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">   .def_readwrite(<span class="string">"name"</span>, &amp;Pet::name);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Method 2: pass parent class_ object:</span></span><br><span class="line">py::class_&lt;Dog&gt;(m, <span class="string">"Dog"</span>, pet <span class="comment">/* &lt;- specify Python parent type */</span>)</span><br><span class="line">    .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;())</span><br><span class="line">    .def(<span class="string">"bark"</span>, &amp;Dog::bark);</span><br></pre></td></tr></table></figure>
+<h3 id="自动向下类型转换（downcasting）"><a href="#自动向下类型转换（downcasting）" class="headerlink" title="自动向下类型转换（downcasting）"></a>自动向下类型转换（downcasting）</h3><p>自动向下类型转换指的是<strong>多态类型</strong>的基类指针形式返回子类对象，此指针被自动识别并转换为子类的指针。需要注意的是，上面的<code>Pet</code>和<code>Dog</code>并不是多态类型，因为<code>Pet</code>中没有定义虚函数。</p>
+<p>下面以<code>Pet</code>和<code>Dog</code>为例展示<strong>没有</strong>自动downcasting时的行为：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 返回指向子类对象的基类指针</span></span><br><span class="line">m.def(<span class="string">"pet_store"</span>, []() &#123; <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Pet&gt;(<span class="keyword">new</span> Dog(<span class="string">"Molly"</span>)); &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 没有自动downcasting时的行为</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p = example.pet_stor()</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; type(p)</span></span><br><span class="line">Pet                                          # 没有被识别为Dog</span><br><span class="line"><span class="comment">// p.bark()</span></span><br><span class="line">AttributeError: 'Pet' object has no attribute 'bark'</span><br></pre></td></tr></table></figure>
+<p>我们可以向<code>Pet</code>中添加一个虚函数来通知Pybind11这种多态关系：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">PolymorphicPet</span> &#123;</span></span><br><span class="line">    <span class="keyword">virtual</span> ~PolymorphicPet() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">PolymorphicDog</span> :</span> PolymorphicPet &#123;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">bark</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> <span class="string">"woof!"</span>; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Same binding code</span></span><br><span class="line">py::class_&lt;PolymorphicPet&gt;(m, <span class="string">"PolymorphicPet"</span>);</span><br><span class="line">py::class_&lt;PolymorphicDog, PolymorphicPet&gt;(m, <span class="string">"PolymorphicDog"</span>)</span><br><span class="line">    .def(py::init&lt;&gt;())</span><br><span class="line">    .def(<span class="string">"bark"</span>, &amp;PolymorphicDog::bark);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Again, return a base pointer to a derived instance</span></span><br><span class="line">m.def(<span class="string">"pet_store2"</span>, []() &#123; <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;PolymorphicPet&gt;(<span class="keyword">new</span> PolymorphicDog); &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Python中调用</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p = example.pet_store2()</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; type(p)</span></span><br><span class="line"><span class="comment">// PolymorphicDog  # automatically downcast</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p.bark()</span></span><br><span class="line"><span class="comment">// u'woof!'</span></span><br></pre></td></tr></table></figure>
+<h3 id="方法重载"><a href="#方法重载" class="headerlink" title="方法重载"></a>方法重载</h3><p>C++中重载的方法直接通过方法名取指针会有歧义，Pybind11有两种方法消除这种歧义。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Pet</span> &#123;</span></span><br><span class="line">    Pet(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name, <span class="keyword">int</span> age) : name(name), age(age) &#123; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">set</span><span class="params">(<span class="keyword">int</span> age_)</span> </span>&#123; age = age_; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">set</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name_)</span> </span>&#123; name = name_; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">    <span class="keyword">int</span> age;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 方法1：指定方法指针类型，C++11+支持</span></span><br><span class="line">py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">   .def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;, <span class="keyword">int</span>&gt;())</span><br><span class="line">   .def(<span class="string">"set"</span>, (<span class="keyword">void</span> (Pet::*)(<span class="keyword">int</span>)) &amp;Pet::<span class="built_in">set</span>, <span class="string">"Set the pet's age"</span>)</span><br><span class="line">   .def(<span class="string">"set"</span>, (<span class="keyword">void</span> (Pet::*)(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;)) &amp;Pet::<span class="built_in">set</span>, <span class="string">"Set the pet's name"</span>);</span><br><span class="line"><span class="comment">// 方法2：py::overload_cast自动推导返回值类型， C++14+支持</span></span><br><span class="line">py::class_&lt;Pet&gt;(m, <span class="string">"Pet"</span>)</span><br><span class="line">    .def(<span class="string">"set"</span>, py::overload_cast&lt;<span class="keyword">int</span>&gt;(&amp;Pet::<span class="built_in">set</span>), <span class="string">"Set the pet's age"</span>)</span><br><span class="line">    .def(<span class="string">"set"</span>, py::overload_cast&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;&gt;(&amp;Pet::<span class="built_in">set</span>), <span class="string">"Set the pet's name"</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="枚举类型"><a href="#枚举类型" class="headerlink" title="枚举类型"></a>枚举类型</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Pet</span> &#123;</span></span><br><span class="line">    <span class="keyword">enum</span> Kind &#123;</span><br><span class="line">        Dog = <span class="number">0</span>,</span><br><span class="line">        Cat</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    Pet(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name, Kind type) : name(name), type(type) &#123; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">    Kind type;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">py::class_&lt;Pet&gt; <span class="title">pet</span><span class="params">(m, <span class="string">"Pet"</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">pet.def(py::init&lt;<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;, Pet::Kind&gt;())</span><br><span class="line">    .def_readwrite(<span class="string">"name"</span>, &amp;Pet::name)</span><br><span class="line">    .def_readwrite(<span class="string">"type"</span>, &amp;Pet::type);</span><br><span class="line"></span><br><span class="line">py::enum_&lt;Pet::Kind&gt;(pet, <span class="string">"Kind"</span>)</span><br><span class="line">    .value(<span class="string">"Dog"</span>, Pet::Kind::Dog)</span><br><span class="line">    .value(<span class="string">"Cat"</span>, Pet::Kind::Cat)</span><br><span class="line">    .export_values();</span><br><span class="line"></span><br><span class="line"><span class="comment">// Python 调用：</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p = Pet('Lucy', Pet.Cat)</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; p.type</span></span><br><span class="line"><span class="comment">// Kind.Cat</span></span><br><span class="line"><span class="comment">// &gt;&gt;&gt; int(p.type)</span></span><br><span class="line"><span class="comment">// 1L</span></span><br></pre></td></tr></table></figure>
+<h2 id="高级特性"><a href="#高级特性" class="headerlink" title="高级特性"></a>高级特性</h2><h3 id="覆写虚函数"><a href="#覆写虚函数" class="headerlink" title="覆写虚函数"></a>覆写虚函数</h3><p>直接以例子来说明：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Animal</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> ~Animal() &#123; &#125;</span><br><span class="line">    <span class="comment">// 纯虚函数， 有纯虚函数的类无法实例化， 因此无法定义构造函数</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span> :</span> <span class="keyword">public</span> Animal &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> <span class="keyword">override</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> result;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;n_times; ++i)</span><br><span class="line">            result += <span class="string">"woof! "</span>;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 传入基类指针，调用实际对象的go方法</span></span><br><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">call_go</span><span class="params">(Animal *animal)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> animal-&gt;go(<span class="number">3</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Bad binding! 无法扩展，因为此处Animal类没有构造函数</span></span><br><span class="line">PYBIND11_MODULE(example, m) &#123;</span><br><span class="line">    py::class_&lt;Animal&gt;(m, <span class="string">"Animal"</span>)</span><br><span class="line">        .def(<span class="string">"go"</span>, &amp;Animal::go);</span><br><span class="line"></span><br><span class="line">    py::class_&lt;Dog, Animal&gt;(m, <span class="string">"Dog"</span>)</span><br><span class="line">        .def(py::init&lt;&gt;());</span><br><span class="line"></span><br><span class="line">    m.def(<span class="string">"call_go"</span>, &amp;call_go);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以在C++中新增一个跳转类来解决上述问题</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PyAnimal</span> :</span> <span class="keyword">public</span> Animal &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">/* Inherit the constructors */</span></span><br><span class="line">    <span class="keyword">using</span> Animal::Animal;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Trampoline (need one for each virtual function) */</span></span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> <span class="keyword">override</span> </span>&#123;</span><br><span class="line">        <span class="comment">/* 对纯虚函数使用此宏 */</span></span><br><span class="line">        <span class="comment">/* 对有默认实现的虚函数，使用PYBIND11_OVERLOAD*/</span></span><br><span class="line">        PYBIND11_OVERLOAD_PURE(</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">string</span>, <span class="comment">/* Return type */</span></span><br><span class="line">            Animal,      <span class="comment">/* Parent class */</span></span><br><span class="line">            go,          <span class="comment">/* Name of function in C++ (must match Python name) */</span></span><br><span class="line">            n_times      <span class="comment">/* Argument(s) */</span></span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">PYBIND11_MODULE(example, m) &#123;</span><br><span class="line">    py::class_&lt;Animal, PyAnimal <span class="comment">/* &lt;--- trampoline*/</span>&gt;(m, <span class="string">"Animal"</span>)</span><br><span class="line">        .def(py::init&lt;&gt;())</span><br><span class="line">        .def(<span class="string">"go"</span>, &amp;Animal::go);</span><br><span class="line"></span><br><span class="line">    py::class_&lt;Dog, Animal&gt;(m, <span class="string">"Dog"</span>)</span><br><span class="line">        .def(py::init&lt;&gt;());</span><br><span class="line"></span><br><span class="line">    m.def(<span class="string">"call_go"</span>, &amp;call_go);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">Python中进行扩展和调用：</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; from example import *</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; d = Dog()</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; call_go(d)</span></span><br><span class="line"><span class="comment">u'woof! woof! woof! '</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; class Cat(Animal):</span></span><br><span class="line"><span class="comment">...     def go(self, n_times):</span></span><br><span class="line"><span class="comment">...             return "meow! " * n_times</span></span><br><span class="line"><span class="comment">...</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; class Dachshund(Dog):</span></span><br><span class="line"><span class="comment">...        def __init__(self, name):</span></span><br><span class="line"><span class="comment">...            Dog.__init__(self) # init c++ part</span></span><br><span class="line"><span class="comment">...            self.name = name</span></span><br><span class="line"><span class="comment">...        def bark(self):</span></span><br><span class="line"><span class="comment">...            return "yap!"</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; c = Cat()</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; call_go(c)</span></span><br><span class="line"><span class="comment">u'meow! meow! meow! '</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>NOTE: 用Python类扩展C++暴露出来的类时，不要使用<code>super()</code>, 不要使用<code>super()</code>, 不要使用<code>super()</code>! 应该直接使用对应类的<code>__init__</code>方法， 因为Python的方法解析顺序（MRO）和C++不一致。</p>
+<h3 id="绑定虚函数和继承"><a href="#绑定虚函数和继承" class="headerlink" title="绑定虚函数和继承"></a>绑定虚函数和继承</h3><p>继续直接从例子开始</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Animal</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">name</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> <span class="string">"unknown"</span>; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span> :</span> <span class="keyword">public</span> Animal &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> <span class="keyword">override</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> result;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;n_times; ++i)</span><br><span class="line">            result += bark() + <span class="string">" "</span>;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">bark</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> <span class="string">"woof!"</span>; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义两个跳转类， 覆写虚函数</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PyAnimal</span> :</span> <span class="keyword">public</span> Animal &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">using</span> Animal::Animal; <span class="comment">// Inherit constructors</span></span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> <span class="keyword">override</span> </span>&#123; PYBIND11_OVERLOAD_PURE(<span class="built_in">std</span>::<span class="built_in">string</span>, Animal, go, n_times); &#125;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">name</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123; PYBIND11_OVERLOAD(<span class="built_in">std</span>::<span class="built_in">string</span>, Animal, name, ); &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PyDog</span> :</span> <span class="keyword">public</span> Dog &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">using</span> Dog::Dog; <span class="comment">// Inherit constructors</span></span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">go</span><span class="params">(<span class="keyword">int</span> n_times)</span> <span class="keyword">override</span> </span>&#123; PYBIND11_OVERLOAD(<span class="built_in">std</span>::<span class="built_in">string</span>, Dog, go, n_times); &#125;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">name</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123; PYBIND11_OVERLOAD(<span class="built_in">std</span>::<span class="built_in">string</span>, Dog, name, ); &#125;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">bark</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123; PYBIND11_OVERLOAD(<span class="built_in">std</span>::<span class="built_in">string</span>, Dog, bark, ); &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>NOTE: 上面通过pybind11注册过的类的子类都需要定义跳转类来覆写父类中的虚函数，当子类较多或者虚函数较多时，可以使用模板类来避免大量重复代码（参考<a href="https://pybind11.readthedocs.io/en/stable/advanced/classes.html#combining-virtual-functions-and-inheritance" target="_blank" rel="noopener">这里</a>）。</p>
+<h3 id="绑定自定义构造函数"><a href="#绑定自定义构造函数" class="headerlink" title="绑定自定义构造函数"></a>绑定自定义构造函数</h3><p>使用<code>py::init&lt;Args, ...&gt;()</code>或者<code>py::init_alias&lt;Args, ...&gt;()</code>绑定构造函数较方便，但有时我们需要绑定自定义的方法作为构造函数（例如：工厂方法，单例获取静态方法）。</p>
+<p>下面的代码展示多种将C++方法绑定为Python构造函数的途径：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Example</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    Example(<span class="keyword">int</span>); <span class="comment">// private constructor</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// Factory function - returned by value:</span></span><br><span class="line">    <span class="function"><span class="keyword">static</span> Example <span class="title">create</span><span class="params">(<span class="keyword">int</span> a)</span> </span>&#123; <span class="keyword">return</span> Example(a); &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// These constructors are publicly callable:</span></span><br><span class="line">    Example(<span class="keyword">double</span>);</span><br><span class="line">    Example(<span class="keyword">int</span>, <span class="keyword">int</span>);</span><br><span class="line">    Example(<span class="built_in">std</span>::<span class="built_in">string</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">py::class_&lt;Example&gt;(m, <span class="string">"Example"</span>)</span><br><span class="line">    <span class="comment">// Bind the factory function as a constructor:</span></span><br><span class="line">    .def(py::init(&amp;Example::create))</span><br><span class="line">    <span class="comment">// Bind a lambda function returning a pointer wrapped in a holder:</span></span><br><span class="line">    .def(py::init([](<span class="built_in">std</span>::<span class="built_in">string</span> arg) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Example&gt;(<span class="keyword">new</span> Example(arg));</span><br><span class="line">    &#125;))</span><br><span class="line">    <span class="comment">// Return a raw pointer:</span></span><br><span class="line">    .def(py::init([](<span class="keyword">int</span> a, <span class="keyword">int</span> b) &#123; <span class="keyword">return</span> <span class="keyword">new</span> Example(a, b); &#125;))</span><br><span class="line">    <span class="comment">// You can mix the above with regular C++ constructor bindings as well:</span></span><br><span class="line">    .def(py::init&lt;<span class="keyword">double</span>&gt;())</span><br><span class="line">    ;</span><br></pre></td></tr></table></figure>
+<h4 id="有虚函数跳转类的构造函数"><a href="#有虚函数跳转类的构造函数" class="headerlink" title="有虚函数跳转类的构造函数"></a>有虚函数跳转类的构造函数</h4><p>两种方法：</p>
+<ol>
+<li>以右值引用的方式将基类值传给子类构造函数</li>
+<li>向<code>py::init&lt;&gt;</code>提供两个工厂函数，第一个在不需要子类时调（即暴露的类只在Python中被使用而没有被继承），第二个在需要子类时被调用</li>
+</ol>
+<p>两种方式的demo如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pybind11/factory.h&gt;</span></span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Example</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">virtual</span> ~Example() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PyExample</span> :</span> <span class="keyword">public</span> Example &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">using</span> Example::Example;</span><br><span class="line">    <span class="comment">// 第一种方式：跳转类以右值引用方式接收基类</span></span><br><span class="line">    PyExample(Example &amp;&amp;base) : Example(<span class="built_in">std</span>::<span class="built_in">move</span>(base)) &#123;&#125;</span><br><span class="line">&#125;;</span><br><span class="line">py::class_&lt;Example, PyExample&gt;(m, <span class="string">"Example"</span>)</span><br><span class="line">    <span class="comment">// Returns an Example pointer.  If a PyExample is needed, the Example instance will be moved via the extra constructor in PyExample, above.</span></span><br><span class="line">    .def(py::init([]() &#123; <span class="keyword">return</span> <span class="keyword">new</span> Example(); &#125;))</span><br><span class="line">    <span class="comment">// 第二种方式：提供两个工厂函数</span></span><br><span class="line">    .def(py::init([]() &#123; <span class="keyword">return</span> <span class="keyword">new</span> Example(); &#125; <span class="comment">/* no alias needed */</span>,</span><br><span class="line">                  []() &#123; <span class="keyword">return</span> <span class="keyword">new</span> PyExample(); &#125; <span class="comment">/* alias needed */</span>))</span><br><span class="line">    <span class="comment">// *Always* returns an alias instance (like py::init_alias&lt;&gt;())</span></span><br><span class="line">    .def(py::init([]() &#123; <span class="keyword">return</span> <span class="keyword">new</span> PyExample(); &#125;))</span><br><span class="line">    ;</span><br></pre></td></tr></table></figure>
+<h3 id="多重继承"><a href="#多重继承" class="headerlink" title="多重继承"></a>多重继承</h3><p>在<code>class_</code>的模板参数中指定所有的基类即可：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">py::class_ &lt;MyType, BaseType1, BaseType2, BaseType3&gt;(m, <span class="string">"MyType"</span>)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/27/Pybind11-classes/" data-id="ckd4gbd630000yz792p1w7hk5" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/08/09/Python-Pass/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Python_Pass
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/07/27/Pybind11-Type-Conversions/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Pybind11 Type Conversions</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-compiler/" rel="tag">LLVM, compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mindspore-Python-Optimizer-C/" rel="tag">Mindspore, Python, Optimizer, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mood/" rel="tag">Mood</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance-C/" rel="tag">Performance, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow-Deep-Learning/" rel="tag">TensorFlow, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/manimgl/" rel="tag">manimgl</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mind-hack/" rel="tag">mind-hack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%AA%E6%9E%81-rendering/" rel="tag">太极, rendering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/LLVM-compiler/" style="font-size: 10px;">LLVM, compiler</a> <a href="/tags/Mindspore-Python-Optimizer-C/" style="font-size: 10px;">Mindspore, Python, Optimizer, C++</a> <a href="/tags/Mood/" style="font-size: 10px;">Mood</a> <a href="/tags/Performance-C/" style="font-size: 10px;">Performance, C++</a> <a href="/tags/SNN-Deep-Learning/" style="font-size: 20px;">SNN, Deep Learning</a> <a href="/tags/TensorFlow-Deep-Learning/" style="font-size: 10px;">TensorFlow, Deep Learning</a> <a href="/tags/c/" style="font-size: 15px;">c++</a> <a href="/tags/manimgl/" style="font-size: 10px;">manimgl</a> <a href="/tags/mind-hack/" style="font-size: 10px;">mind-hack</a> <a href="/tags/pybind11-c-python/" style="font-size: 15px;">pybind11, c++, python</a> <a href="/tags/%E5%A4%AA%E6%9E%81-rendering/" style="font-size: 10px;">太极, rendering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">April 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2021/04/24/manimgl-install/">manimgl install</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/07/LLVM0/">LLVM0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/31/Taichi0/">Taichi0</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/23/two-list-system/">two-list system</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+/!--
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+</body>
+</html>
