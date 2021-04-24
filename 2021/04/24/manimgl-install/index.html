@@ -7,15 +7,15 @@
   
   <title>manimgl install | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="manimgl安装准备用manimgl渲染一些数学释义，配置tex的过程折腾了一番，记录一下备忘。 1234567891011pip install texsudo apt-get install texlive-latex-base dvipng texlive-latex-extra cm-super xzdec# setup tlmgrtlmgr init-usertreetlmgr opt">
+  <meta name="description" content="manimgl安装准备用manimgl渲染一些数学释义，配置tex的过程折腾了一番，记录一下备忘。 12345678910pip install texsudo apt-get install texlive-latex-base dvipng texlive-latex-extra cm-super xzdec# setup tlmgrtlmgr init-usertreetlmgr optio">
 <meta property="og:type" content="article">
 <meta property="og:title" content="manimgl install">
 <meta property="og:url" content="http://yoursite.com/2021/04/24/manimgl-install/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="manimgl安装准备用manimgl渲染一些数学释义，配置tex的过程折腾了一番，记录一下备忘。 1234567891011pip install texsudo apt-get install texlive-latex-base dvipng texlive-latex-extra cm-super xzdec# setup tlmgrtlmgr init-usertreetlmgr opt">
+<meta property="og:description" content="manimgl安装准备用manimgl渲染一些数学释义，配置tex的过程折腾了一番，记录一下备忘。 12345678910pip install texsudo apt-get install texlive-latex-base dvipng texlive-latex-extra cm-super xzdec# setup tlmgrtlmgr init-usertreetlmgr optio">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-04-24T13:59:33.000Z">
-<meta property="article:modified_time" content="2021-04-24T14:03:58.357Z">
+<meta property="article:modified_time" content="2021-04-24T15:44:18.526Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="manimgl">
 <meta name="twitter:card" content="summary">
@@ -90,8 +90,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h1 id="manimgl安装"><a href="#manimgl安装" class="headerlink" title="manimgl安装"></a>manimgl安装</h1><p>准备用<code>manimgl</code>渲染一些数学释义，配置tex的过程折腾了一番，记录一下备忘。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">pip install tex</span><br><span class="line">sudo apt-get install texlive-latex-base dvipng texlive-latex-extra cm-super xzdec</span><br><span class="line"><span class="comment"># setup tlmgr</span></span><br><span class="line">tlmgr init-usertree</span><br><span class="line">tlmgr option repository ftp://tug.org/historic/systems/texlive/2017/tlnet-final</span><br><span class="line"><span class="comment"># update tlmgr</span></span><br><span class="line"><span class="comment">#wget http://mirror.ctan.org/systems/texlive/tlnet/update-tlmgr-latest.sh</span></span><br><span class="line"><span class="comment">#sh update-tlmgr-latest.sh -- --upgrade</span></span><br><span class="line"><span class="comment"># install physics.sty</span></span><br><span class="line">sudo $(<span class="built_in">which</span> tlmgr) install physics</span><br><span class="line">​</span><br></pre></td></tr></table></figure>
-<p>```</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">pip install tex</span><br><span class="line">sudo apt-get install texlive-latex-base dvipng texlive-latex-extra cm-super xzdec</span><br><span class="line"><span class="comment"># setup tlmgr</span></span><br><span class="line">tlmgr init-usertree</span><br><span class="line">tlmgr option repository ftp://tug.org/historic/systems/texlive/2017/tlnet-final</span><br><span class="line"><span class="comment"># update tlmgr</span></span><br><span class="line"><span class="comment">#wget http://mirror.ctan.org/systems/texlive/tlnet/update-tlmgr-latest.sh</span></span><br><span class="line"><span class="comment">#sh update-tlmgr-latest.sh -- --upgrade</span></span><br><span class="line"><span class="comment"># install physics.sty</span></span><br><span class="line">sudo $(<span class="built_in">which</span> tlmgr) install physics</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -232,5 +231,24 @@
 
 
   </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+/!--
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
 </body>
 </html>

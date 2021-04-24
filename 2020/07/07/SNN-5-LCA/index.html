@@ -14,13 +14,13 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="SNN学习笔记5：LCA稀疏编码实验表明人脑对于外界刺激采取一种稀疏的内在表示，例如自然图像只需要用稀疏词典中一个很小的子集及合适的对应系数来进行稀疏近似（sparse approximation）。 稀疏近似稀疏近似的数学表述如下： ​    给定一个N维刺激s \in \mathbb{R}^N, 找到一个基于由M个向量\{\phi_m\}组成的词典$D$的表示。当词典D是overcomplet">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://yoursite.com/2020/07/07/images/lca.png">
+<meta property="og:image" content="http://yoursite.com/images/lca.png">
 <meta property="article:published_time" content="2020-07-07T02:25:56.000Z">
-<meta property="article:modified_time" content="2021-04-24T15:38:04.236Z">
+<meta property="article:modified_time" content="2021-04-24T15:49:46.270Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="SNN, Deep Learning">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yoursite.com/2020/07/07/images/lca.png">
+<meta name="twitter:image" content="http://yoursite.com/images/lca.png">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -122,7 +122,7 @@
 \dot{u}_m(t) = \frac{1}{\tau}[b_m(t) - u_m(t) - \sum_\limits{\substack{n \neq m} }G_{m, n}a_n(t)</script><h3 id="Demo实现"><a href="#Demo实现" class="headerlink" title="Demo实现"></a>Demo实现</h3><p>github上的一个<a href="https://github.com/ctn-waterloo/cogsci17-decide/blob/5e82b8cf466db5ce84270c866e9dc0c36daa52b6/cogsci17_decide/networks.py" target="_blank" rel="noopener">参考实现</a>：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> nengo</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">LCA</span><span class="params">(d, n_neurons, dt)</span>:</span></span><br><span class="line">    k = <span class="number">1.</span></span><br><span class="line">    beta = <span class="number">1.</span></span><br><span class="line">    tau_model = <span class="number">0.1</span></span><br><span class="line">    tau_actual = <span class="number">0.1</span></span><br><span class="line"></span><br><span class="line">    I = np.eye(d)</span><br><span class="line">    inhibit = <span class="number">1</span> - I</span><br><span class="line">    B = <span class="number">1.</span> / tau_model</span><br><span class="line">    A = (-k * I - beta * inhibit) / tau_model</span><br><span class="line"></span><br><span class="line">    <span class="keyword">with</span> nengo.Network(label=<span class="string">"LCA"</span>) <span class="keyword">as</span> net:</span><br><span class="line">        net.input = nengo.Node(size_in=d)</span><br><span class="line">        <span class="comment"># array of ensembles: d ensembles, each with n_neurons neurons</span></span><br><span class="line">        x = nengo.networks.EnsembleArray(</span><br><span class="line">            n_neurons, d,</span><br><span class="line">            eval_points=nengo.dists.Uniform(<span class="number">0.</span>, <span class="number">1.</span>),</span><br><span class="line">            intercepts=nengo.dists.Uniform(<span class="number">0.</span>, <span class="number">1.</span>),</span><br><span class="line">            encoders=nengo.dists.Choice([[<span class="number">1.</span>]]),</span><br><span class="line">            label=<span class="string">"state"</span>)</span><br><span class="line">        <span class="comment"># transform: linear transformation mapping the pre output to the post input</span></span><br><span class="line">        <span class="comment"># synapse: synapse model for filtering</span></span><br><span class="line">        nengo.Connection(x.output, x.input, transform=tau_actual * A + I, synapse=tau_actual)</span><br><span class="line">        nengo.Connection(net.input, x.input, transform=tau_actual*B, synapse=tau_actual)</span><br><span class="line">        net.output = x.output</span><br><span class="line">    <span class="keyword">return</span> net</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    dt = <span class="number">0.001</span></span><br><span class="line">    <span class="keyword">with</span> nengo.Network(seed=<span class="number">42</span>) <span class="keyword">as</span> model:</span><br><span class="line">        <span class="comment"># winner takes all</span></span><br><span class="line">        wta = LCA(<span class="number">3</span>, <span class="number">200</span>, dt)</span><br><span class="line">        stimulus = nengo.Node([<span class="number">0.8</span>, <span class="number">0.7</span>, <span class="number">0.6</span>])</span><br><span class="line">        nengo.Connection(stimulus, wta.input, synapse=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">        p_stimulus = nengo.Probe(stimulus, synapse=<span class="literal">None</span>)</span><br><span class="line">        p_output = nengo.Probe(wta.output, synapse=<span class="number">0.01</span>)</span><br><span class="line">    <span class="keyword">with</span> nengo.Simulator(model, dt=dt) <span class="keyword">as</span> sim:</span><br><span class="line">        sim.run(<span class="number">1.</span>)</span><br><span class="line"></span><br><span class="line">    fig = plt.figure()</span><br><span class="line">    plt.plot(sim.trange(), sim.data[p_output])</span><br><span class="line">    plt.title(<span class="string">"(a)LCA"</span>)</span><br><span class="line">    plt.xlabel(<span class="string">"Time [s]"</span>)</span><br><span class="line">    plt.ylabel(<span class="string">"Decoded output"</span>)</span><br><span class="line">    plt.locator_params(axis=<span class="string">'y'</span>, nbins=<span class="number">5</span>)</span><br><span class="line">    plt.tight_layout()</span><br><span class="line">    plt.show()</span><br><span class="line">        </span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
 <p>效果如下：</p>
-<p><img src="../images/lca.png" alt="LCA"></p>
+<p><img src="/images/lca.png" alt="LCA"></p>
 <p>可以看到3个ensemble中只有得到最强输入的一个保留了下来。</p>
 
       
@@ -273,5 +273,24 @@
 
 
   </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+/!--
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
 </body>
 </html>
