@@ -40,7 +40,7 @@ NOTE：目前发射频率没有一个公认的定义，常见的定义有：1）
 
 #### 频率编码：时间相关发射率
 
-时间相关发射率（time-dependent firing rate）定义为 $\frac{C_{t}^{t + \Delta t}spikes}{\Delta t}$,其中$C_t^{t + \Delta t}spikes$表示$t$到$\Delta t$之间的脉冲计数。和脉冲计数码率不同，时间相关发射率不仅可以处理常量刺激，也可以处理时间相关的刺激。
+时间相关发射率（time-dependent firing rate）定义为`$\frac{C_{t}^{t + \Delta t}spikes}{\Delta t}$`,其中`$C_t^{t + \Delta t}spikes$`表示`$t$`到`$\Delta t$`之间的脉冲计数。和脉冲计数码率不同，时间相关发射率不仅可以处理常量刺激，也可以处理时间相关的刺激。
 
 NOTE: 时间相关发射率依赖于有多个独立神经元，每个神经元接收同一种刺激的假设。
 

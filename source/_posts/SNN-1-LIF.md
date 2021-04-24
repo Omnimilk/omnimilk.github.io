@@ -26,9 +26,9 @@ $C_m$ 表示神经元的电容, 我们容易看出上式只是电容公式Q=CV�
 
 #### 不应期
 
-通过增加不应期（refractory period）$t_{ref}$可以使Integrate-and-fire模型更加精准。所谓不应期，就是在此期间神经元无法激活，这一现象在实际的神经元中已经被观察到，微观上可以由[钠钾离子通道的状态](https://www.youtube.com/watch?v=Gsf9IB-wQdU)来解释。
+通过增加不应期（refractory period）`$t_{ref}$`可以使Integrate-and-fire模型更加精准。所谓不应期，就是在此期间神经元无法激活，这一现象在实际的神经元中已经被观察到，微观上可以由[钠钾离子通道的状态](https://www.youtube.com/watch?v=Gsf9IB-wQdU)来解释。
 
-不应期限制了神经元激活的频率，激活频率与不应期$t_{ref}$的关系如下：
+不应期限制了神经元激活的频率，激活频率与不应期`$t_{ref}$`的关系如下：
 $$
 f(I) = \frac{I}{C_mV_{th} + t_{ref}I}
 $$
@@ -43,11 +43,11 @@ $$
 $$
 I(t) - \frac{V_m(t)}{R_m} = C_m \frac{dV_m(t)}{dt}
 $$
-“漏电”项$\frac{V_m(t)}{R_m}$中的$R_m$表示膜电阻。
+“漏电”项`$\frac{V_m(t)}{R_m}$`中的`$R_m$`表示膜电阻。
 
 公式蕴含了下面这些有趣的性质：
 
-1. 激活神经元的输入电流必须超过$I_{th} = \frac{V_{th}}{R_m}$, 否则漏电项会导致膜电位泄露
+1. 激活神经元的输入电流必须超过`$I_{th} = \frac{V_{th}}{R_m}$`, 否则漏电项会导致膜电位泄露
 2. 大电流输入时，模型趋近于Integrate-and-fire+不应期
 
 ## LIF: Nengo实现

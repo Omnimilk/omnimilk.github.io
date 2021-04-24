@@ -39,7 +39,7 @@ nengo有两种使用模式：GUI和Python解释器。Python解释器模式下，
 
 ### 核心概念
 
-![架构](../images/ecosystem.svg)
+![架构](/images/ecosystem.svg)
 
 上图Nengo Core主要包含五个核心Nengo对象和一个基于Numpy的模拟器。五个对象如下：
 
@@ -106,10 +106,10 @@ plt.show()
 
 上面代码运行的结果如下：
 
-![a](../images/a.png)
+![a](/images/a.png)
 
-![a](../images/relu.png)
+![a](/images/relu.png)
 
-![a](../images/raster.png)
+![a](/images/raster.png)
 
 可以看到每个神经元的初始连接权重及bias不同，因此对输入信号的相应略有不同；spiking neurons会在电压超过0时产生脉冲发射事件，注意图二和图三中的颜色对应，我们还可以观察到电压值越高，对应的脉冲发射频率越高。
