@@ -5,14 +5,19 @@
   
 
   
-  <title>Tag: TensorFlow, Deep Learning | Hexo</title>
+  <title>dithering | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/tags/TensorFlow-Deep-Learning/index.html">
+  <meta name="description" content="图像平滑算法： Dithering看稚晖君的视频用墨水屏显示图像的部分提到了这个算法，感觉很有意思。墨水屏或者黑白打印机只能显示二值的黑白像素，dithering算法能帮我们用黑白近似灰度图像。其实，更一般地，dithering算法可以用来平滑各种信号量化带来的误差。 原理考虑将灰度图像（0为全黑，255为全白）量化为黑白图片，灰度值为42时我们如何量化呢？简单的做法是取灰度上的近邻，用0来表示灰">
+<meta property="og:type" content="article">
+<meta property="og:title" content="dithering">
+<meta property="og:url" content="http://yoursite.com/2021/05/06/dithering/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="图像平滑算法： Dithering看稚晖君的视频用墨水屏显示图像的部分提到了这个算法，感觉很有意思。墨水屏或者黑白打印机只能显示二值的黑白像素，dithering算法能帮我们用黑白近似灰度图像。其实，更一般地，dithering算法可以用来平滑各种信号量化带来的误差。 原理考虑将灰度图像（0为全黑，255为全白）量化为黑白图片，灰度值为42时我们如何量化呢？简单的做法是取灰度上的近邻，用0来表示灰">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-05-06T13:50:56.000Z">
+<meta property="article:modified_time" content="2021-05-06T15:10:09.256Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="signal processing">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -62,40 +67,110 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2020" class="archive-year">2020</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/07/20/Tensorflow-Graph-Matcher/" class="archive-article-date">
-  <time datetime="2020-07-20T01:34:12.000Z" itemprop="datePublished">Jul 20</time>
+        <section id="main"><article id="post-dithering" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2021/05/06/dithering/" class="article-date">
+  <time datetime="2021-05-06T13:50:56.000Z" itemprop="datePublished">2021-05-06</time>
 </a>
-      
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/07/20/Tensorflow-Graph-Matcher/">Tensorflow graph_matcher</a>
+    <h1 class="article-title" itemprop="name">
+      dithering
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="图像平滑算法：-Dithering"><a href="#图像平滑算法：-Dithering" class="headerlink" title="图像平滑算法： Dithering"></a>图像平滑算法： Dithering</h1><p>看<a href="https://www.bilibili.com/video/BV1Cf4y1y7KT" target="_blank" rel="noopener">稚晖君的视频</a>用墨水屏显示图像的部分提到了这个算法，感觉很有意思。墨水屏或者黑白打印机只能显示二值的黑白像素，dithering算法能帮我们用黑白近似灰度图像。其实，更一般地，dithering算法可以用来<strong>平滑</strong>各种信号量化带来的误差。</p>
+<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>考虑将灰度图像（0为全黑，255为全白）<strong>量化</strong>为黑白图片，灰度值为42时我们如何量化呢？简单的做法是取灰度上的近邻，用0来表示灰度值为42的像素。对于量化产生的误差，如果直接忽略，最后生成的图像质量会很差，因此我们需要找到更好的<strong>处理量化误差</strong>的方式。</p>
+<h3 id="error-diffusion"><a href="#error-diffusion" class="headerlink" title="error diffusion"></a>error diffusion</h3><p>error diffusion dithering算法以某种顺序处理像素，处理像素时的量化误差在迭代处理像素时扩散（diffusion）。例如：当前像素为42，量化为0的误差为42，假设下一个像素值为100，那么加上传递过来的误差等于142，此像素应该量化为1，此时误差变为142 - 255 = -113，继续向下一个像素传递，以此类推。</p>
+<blockquote>
+<p><strong>缺点</strong>：原图中的色块会扩散为黑色的线。</p>
+</blockquote>
+<p>上面线性的处理的一个意想（liao）不（zhi）到（zhong）的后果（artifacts）就是会导致生成图像中奇怪的条纹。核心的原因就是2D图像采用了1D的误差扩散方式。</p>
+<h3 id="2D-error-diffusion-Floyd-Steinberg-Dithering"><a href="#2D-error-diffusion-Floyd-Steinberg-Dithering" class="headerlink" title="2D error-diffusion: Floyd-Steinberg Dithering"></a>2D error-diffusion: Floyd-Steinberg Dithering</h3><p>从左上角向右下角扩散，局部涉及的像素和系数表如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>X</th>
+<th>7/16</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3/16</td>
+<td>5/16</td>
+<td>1/16</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="2D-error-diffusion-Jarvis-Judice-and-Ninke-Dithering"><a href="#2D-error-diffusion-Jarvis-Judice-and-Ninke-Dithering" class="headerlink" title="2D error-diffusion: Jarvis, Judice, and Ninke Dithering"></a>2D error-diffusion: Jarvis, Judice, and Ninke Dithering</h3><p>同样是左上角向右下角扩散，设计的像素和系数表如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>X</th>
+<th>7/48</th>
+<th>5/48</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3/48</td>
+<td>5/48</td>
+<td>7/48</td>
+<td>5/48</td>
+<td>3/48</td>
+</tr>
+<tr>
+<td>1/48</td>
+<td>3/48</td>
+<td>5/48</td>
+<td>3/48</td>
+<td>1/48</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>很多其他的扩散方式可以选择，but you get the idea.</p>
 
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2021/05/06/dithering/" data-id="ckod10gwz00001jw30uyu0roy" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/signal-processing/" rel="tag">signal processing</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2021/04/24/manimgl-install/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">manimgl install</div>
+    </a>
+  
+</nav>
+
+  
+</article>
 
 </section>
         

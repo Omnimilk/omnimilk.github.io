@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2021/05/06/dithering/</loc>
+    
+    <lastmod>2021-05-06</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2020/07/07/SNN-5-LCA/</loc>
     
     <lastmod>2021-04-24</lastmod>
@@ -144,7 +151,7 @@
 
   <url>
     <loc>http://yoursite.com/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -152,77 +159,84 @@
   
   <url>
     <loc>http://yoursite.com/tags/Mood/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://yoursite.com/tags/Performance-C/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://yoursite.com/tags/LLVM-compiler/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://yoursite.com/tags/pybind11-c-python/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://yoursite.com/tags/Mindspore-Python-Optimizer-C/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://yoursite.com/tags/SNN-Deep-Learning/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://yoursite.com/tags/%E5%A4%AA%E6%9E%81-rendering/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://yoursite.com/tags/TensorFlow-Deep-Learning/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://yoursite.com/tags/c/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://yoursite.com/tags/manimgl/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://yoursite.com/tags/mind-hack/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/tags/signal-processing/</loc>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
@@ -231,14 +245,14 @@
   
   <url>
     <loc>http://yoursite.com/categories/%E7%BC%96%E7%A8%8B/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://yoursite.com/categories/AI/</loc>
-    <lastmod>2021-04-24</lastmod>
+    <lastmod>2021-05-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
