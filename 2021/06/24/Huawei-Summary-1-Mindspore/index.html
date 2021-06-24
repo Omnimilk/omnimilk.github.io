@@ -5,14 +5,19 @@
   
 
   
-  <title>Archives: 2020 | Hexo</title>
+  <title>Huawei Summary 1: Mindspore | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/archives/2020/index.html">
+  <meta name="description" content="工作总结1 ： MindsporeEAI的工作交付完成后有一段时间空闲期，没有实际的活儿，和浩哥一起学了一些程序分析相关的东西。浩哥技术不错，也乐于组织一些技术分享，经常带着我们一群编译器小白讲解概念和“结对编程”（其实是边写代码边给我们将思路）。这期间最大的收获就是学了一些source 2 source转换和ANTLR的一些知识。记得当时准备一个链接器专利需要自动改写linker script，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Huawei Summary 1: Mindspore">
+<meta property="og:url" content="http://yoursite.com/2021/06/24/Huawei-Summary-1-Mindspore/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="工作总结1 ： MindsporeEAI的工作交付完成后有一段时间空闲期，没有实际的活儿，和浩哥一起学了一些程序分析相关的东西。浩哥技术不错，也乐于组织一些技术分享，经常带着我们一群编译器小白讲解概念和“结对编程”（其实是边写代码边给我们将思路）。这期间最大的收获就是学了一些source 2 source转换和ANTLR的一些知识。记得当时准备一个链接器专利需要自动改写linker script，">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-06-24T14:05:45.000Z">
+<meta property="article:modified_time" content="2021-06-24T15:20:27.779Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Work">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -62,216 +67,65 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2020" class="archive-year">2020</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-posts">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/09/07/LLVM0/" class="archive-article-date">
-  <time datetime="2020-09-07T02:29:44.000Z" itemprop="datePublished">Sep 7</time>
+        <section id="main"><article id="post-Huawei-Summary-1-Mindspore" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2021/06/24/Huawei-Summary-1-Mindspore/" class="article-date">
+  <time datetime="2021-06-24T14:05:45.000Z" itemprop="datePublished">2021-06-24</time>
 </a>
-      
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/09/07/LLVM0/">LLVM0</a>
+    <h1 class="article-title" itemprop="name">
+      Huawei Summary 1: Mindspore
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
+      </header>
     
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/08/23/two-list-system/" class="archive-article-date">
-  <time datetime="2020-08-23T12:09:15.000Z" itemprop="datePublished">Aug 23</time>
-</a>
+    <div class="article-entry" itemprop="articleBody">
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/08/23/two-list-system/">two-list system</a>
-    </h1>
-  
+        <h1 id="工作总结1-：-Mindspore"><a href="#工作总结1-：-Mindspore" class="headerlink" title="工作总结1 ： Mindspore"></a>工作总结1 ： Mindspore</h1><p>EAI的工作交付完成后有一段时间空闲期，没有实际的活儿，和浩哥一起学了一些程序分析相关的东西。浩哥技术不错，也乐于组织一些技术分享，经常带着我们一群编译器小白讲解概念和“结对编程”（其实是边写代码边给我们将思路）。这期间最大的收获就是学了一些source 2 source转换和ANTLR的一些知识。记得当时准备一个链接器专利需要自动改写linker script，于是准备用ANTLR做source 2 source的转换，但是当时能找到的只有一个ANTLR2 语法的linker script语法文件，为了让ANTLR4的运行时能正确解析，还套娃去找了一个将ANTLR2语法文件转换成ANTLR4语法文件的工具hhh。</p>
+<h2 id="TIK算子实现"><a href="#TIK算子实现" class="headerlink" title="TIK算子实现"></a>TIK算子实现</h2><p>空闲的状态没有持续太久，我们组就打包卖给海思图灵去写vector core和scalar core的算子。我当时主要是负责vector core算子的编写，vector core开发用的是<strong>TIK</strong>(Tensor Iterator Kernel), 是一个Python开发框架，框架会将我们写的TIK代码转换为CCE-C代码，然后用CCE-C的编译器编译出device侧的二进制。开发流程十分传统厚重，感受了一把<strong>原汁原味</strong>的瀑布式开发流程，每个算子实现都要写概要设计文档、详细设计文档，然后设计文档也有集体检视，文档检视还有缺陷率的要求（&gt;5%）。</p>
+<p>负责实现的第一个算子是<strong>SGBM</strong>，用于作双目视差计算的，最高需要支持1080p的灰度图作为输入。这个算法比较复杂，主要分为4个步骤：</p>
+<ol>
+<li>预处理：水平Sobel算子处理后得到图像的梯度信息</li>
+<li>代价计算：原图像SAD代价+梯度图中的梯度代价</li>
+<li><strong>动态规划</strong>：代价由左上角向右下角传播，OpenCV默认使用四条传播路径</li>
+<li>后处理：唯一性检测、亚像素插值、左右一致性检测etc</li>
+</ol>
+<p>算法根据上面步骤分给了三个人做，我主要负责<strong>动态规划</strong>部分的实现。动态规划计算时，每个像素依赖当前行和上一行中的像素，但是无法一次容纳最大size的两行像素。因此我们需要同时对行和列进行tiling切分，每次处理两行x64个像素,先从左向右传播，后从上向下传播。这样的tiling切分会导致host到device的数据搬运和后续处理的<strong>流水线效率不高</strong>，最后算法整体测试时结果也验证了这一点。但这是算法特性（下一行依赖上一行）决定的，最后算法要不要异构下放到vector core这个需求又回去重新评估了。。</p>
+<p>后面又负责了<strong>WarpAffine</strong>和<strong>WarpPerspective</strong>两个算子的实现，这两个算子数学公式看起来都很简单，只是简单的<em>双线性内插值</em>。但是<a href="https://github.com/opencv/opencv/blob/master/modules/imgproc/src/imgwarp.hpp" target="_blank" rel="noopener">OpenCV的实现</a>却用了3000行+，其中用到了很多巧妙的优化小技巧，例如对小方格进行量化切分成NxN的小格，每个格子中直接存放了周围四个像素点的权重。这两个算法分析好优化方案之后就无甚可书了，tiling按照行搬入即可，写到最后我的代码补全工具比我还要懂TIK，写几个字母能直接补全一两行。</p>
+<h2 id="ME开发"><a href="#ME开发" class="headerlink" title="ME开发"></a>ME开发</h2><p>ME(Mindspore前端)的主要工作之前已经汇总过了，可以看<a href="https://omnimilk.github.io/2020/08/09/Python-Pass/" target="_blank" rel="noopener">这篇</a>。</p>
 
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-posts">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/" class="archive-article-date">
-  <time datetime="2020-08-14T02:54:58.000Z" itemprop="datePublished">Aug 14</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/08/14/C-Performance-Trick-OutOfLine-Pattern/">C++ Performance Trick: OutOfLine Pattern</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-posts">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/08/09/Python-Pass/" class="archive-article-date">
-  <time datetime="2020-08-09T07:00:53.000Z" itemprop="datePublished">Aug 9</time>
-</a>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2021/06/24/Huawei-Summary-1-Mindspore/" data-id="ckqb1yfqg0000pmw3bur986r7" class="article-share-link">Share</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/08/09/Python-Pass/">Python_Pass</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/07/27/Pybind11-classes/" class="archive-article-date">
-  <time datetime="2020-07-27T06:10:51.000Z" itemprop="datePublished">Jul 27</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/07/27/Pybind11-classes/">Pybind11 classes</a>
-    </h1>
-  
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Work/" rel="tag">Work</a></li></ul>
 
-    </header>
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2021/06/23/Huawei-Summary-0-EAI/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Huawei Summary 0: EAI</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/07/27/Pybind11-Type-Conversions/" class="archive-article-date">
-  <time datetime="2020-07-27T02:17:43.000Z" itemprop="datePublished">Jul 27</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/07/27/Pybind11-Type-Conversions/">Pybind11 Type Conversions</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/07/26/Bonfire/" class="archive-article-date">
-  <time datetime="2020-07-26T03:46:59.000Z" itemprop="datePublished">Jul 26</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/07/26/Bonfire/">Bonfire</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/07/20/Tensorflow-Graph-Matcher/" class="archive-article-date">
-  <time datetime="2020-07-20T01:34:12.000Z" itemprop="datePublished">Jul 20</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/07/20/Tensorflow-Graph-Matcher/">Tensorflow graph_matcher</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/07/07/SNN-5-LCA/" class="archive-article-date">
-  <time datetime="2020-07-07T02:25:56.000Z" itemprop="datePublished">Jul 7</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/07/07/SNN-5-LCA/">SNN[5]: LCA</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/07/06/SNN-4-Nengo/" class="archive-article-date">
-  <time datetime="2020-07-06T07:56:34.000Z" itemprop="datePublished">Jul 6</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/07/06/SNN-4-Nengo/">SNN[4]: Nengo</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
-
-
-  <nav id="page-nav">
-    
-    <span class="page-number current">1</span><a class="page-number" href="/archives/2020/page/2/">2</a><a class="extend next" rel="next" href="/archives/2020/page/2/">Next &amp;raquo;</a>
-  </nav>
 
 </section>
         
