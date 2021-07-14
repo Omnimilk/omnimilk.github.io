@@ -64,6 +64,45 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-wolai-and-notion" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2021/07/14/wolai-and-notion/" class="article-date">
+  <time datetime="2021-07-14T14:13:23.000Z" itemprop="datePublished">2021-07-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2021/07/14/wolai-and-notion/">wolai and notion</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="笔记应用：wolai和notion"><a href="#笔记应用：wolai和notion" class="headerlink" title="笔记应用：wolai和notion"></a>笔记应用：wolai和notion</h1><p>最近发现了这两个生产力神器，功能类似(可以很方便的构建自己的知识图谱或者是追踪个人的计划及执行情况), 特性上各有千秋，wolai的中文支持更好，notion的多媒体支持更丰富。以后这个blog的功能应该会更加单纯，需要与更多人分享的内容才会发出来，个人知识管理类的直接wolai走起，不会再发出来了～</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2021/07/14/wolai-and-notion/" data-id="ckr3kn20g0000b9w320ki450s" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/productivity/" rel="tag">productivity</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Huawei-Summary-1-Mindspore" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2021/06/24/Huawei-Summary-1-Mindspore/" class="article-date">
@@ -168,7 +207,7 @@
 <h3 id="并行"><a href="#并行" class="headerlink" title="并行"></a>并行</h3><p>框架推理接口同时提供C接口和Cython暴露出来的python接口，接口中输入为多个样本，我们选择了进行数据并行多线程加速。值得注意的时，Python中让人头疼的GIL，在调用C实现时可以比较容易的绕过。</p>
 <h3 id="模型序列化和反序列化"><a href="#模型序列化和反序列化" class="headerlink" title="模型序列化和反序列化"></a>模型序列化和反序列化</h3><p>一开始这个工具只是为了个人开发测试用，于是快速手橹了几个python脚本，把模型序列化成json格式，反序列化则是从头手写的json解析器。后面得知这玩意儿要作为交付件交付，无知者无畏就这么交付了，但凡有一个大哥带，也不会不用上protobuf-c啥的。。</p>
 <h2 id="插值算法：-二次插值，样条插值"><a href="#插值算法：-二次插值，样条插值" class="headerlink" title="插值算法： 二次插值，样条插值"></a>插值算法： 二次插值，样条插值</h2><p>二次插值比较简单，<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.CubicSpline.html#scipy.interpolate.CubicSpline" target="_blank" rel="noopener">三次样条插值</a>需要自己解线性方程组，问题规模不是很大，只是实现了简单的高斯消元求解。然后印象比较深刻的就是，三次样条插值的边界条件默认设置是”not-a-knot”,  这只指定了一个方程，要使方程有唯一解还需要一个额外的边界条件，找遍了scipy的源码也没找到怎么设置的，最后是试错才找到的。。</p>
-<h2 id="log10加速"><a href="#log10加速" class="headerlink" title="log10加速"></a>log10加速</h2><p>这个需求是某业务部门profiling之后发现的性能瓶颈之一，计算log10竟然占到了所有计算时间的超过10%。log10作为glibc数学库中的一部分，自然本身的实现也是不差的，优化谈何容易，但是好在互联网上有各色好心人分享自己的智慧。一番搜寻之后，找到了一个ebay的工程师写的<a href="https://tech.ebayinc.com/engineering/fast-approximate-logarithms-part-i-the-basics/" target="_blank" rel="noopener">博客</a>，讲的是他优化log2实现的过程，里面涉及的知识面十分广。文中讲到的几个大点至今还有印象，IEEE 754浮点数的定义可以帮助我们快速用位操作计算log2；log2的计算有许多近似公式可以选择，选择近似公式既要考虑速度由要考虑公式在各种情况下的数值稳定性；选择好一个近似公式之后，公式中的各个参数如何通过凸优化求解。给大神递可乐orz</p>
+<h2 id="log10加速"><a href="#log10加速" class="headerlink" title="log10加速"></a>log10加速</h2><p>这个需求是某业务部门profiling之后发现的性能瓶颈之一，计算log10竟然占到了所有计算时间的超过10%。log10作为glibc数学库中的一部分，自然本身的实现也是不差的，优化谈何容易，但是好在互联网上有各色好心人分享自己的智慧。一番搜寻之后，找到了一个ebay的工程师写的<a href="https://tech.ebayinc.com/engineering/fast-approximate-logarithms-part-i-the-basics/" target="_blank" rel="noopener">博客</a>，讲的是他优化log2实现的过程，里面涉及的知识面十分广。文中讲到的几个大点至今还有印象，IEEE 754浮点数的定义可以帮助我们快速用位操作计算log2；log2的计算有许多近似公式可以选择，选择近似公式既要考虑速度由要考虑公式在各种情况下的数值稳定性；选择好一个近似公式之后，公式中的各个参数如何通过凸优化求解。最后实现出来的log10比glibc快2倍多，给大神递可乐orz</p>
 <h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>中间还穿插做了一个小工具，可以用于<strong>裁剪python库</strong>。这个裁剪工具根据粒度的不同分两部分，第一个部分是<strong>文件级的裁剪</strong>，根据应用的使用情况裁剪掉库中不需要的各种文件。原理比较简单，运行一个大佬用Go写的用户态文件系统，这个文件系统会统计每个文件的访问次数，裁剪脚本（python实现）以此作为判断是否需要的依据，删掉不需要的文件。另一个部分是<strong>函数级裁剪</strong>，一个文件中也会有许多用不到的函数，同样可以裁剪掉。</p>
 
       
@@ -623,69 +662,6 @@
 
 
   
-    <article id="post-Pybind11-Type-Conversions" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/07/27/Pybind11-Type-Conversions/" class="article-date">
-  <time datetime="2020-07-27T02:17:43.000Z" itemprop="datePublished">2020-07-27</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/07/27/Pybind11-Type-Conversions/">Pybind11 Type Conversions</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="Pybind11类型转换"><a href="#Pybind11类型转换" class="headerlink" title="Pybind11类型转换"></a>Pybind11类型转换</h1><p>Pybind11帮助我们方便的实现C++和Python之间的调用，无论是相互的接口暴露还是数据传递都要求我们正确的在C++和Python类型之间进行转换（<a href="https://pybind11.readthedocs.io/en/stable/advanced/cast/overview.html" target="_blank" rel="noopener">官方文档</a>）。</p>
-<h2 id="三种场景"><a href="#三种场景" class="headerlink" title="三种场景"></a>三种场景</h2><ol>
-<li>C++原生类型暴露给python</li>
-<li>Python原生类型暴露给C++</li>
-<li>C++和Python原生类型间相互转换</li>
-</ol>
-<h2 id="C-原生类型暴露给Python"><a href="#C-原生类型暴露给Python" class="headerlink" title="C++原生类型暴露给Python"></a>C++原生类型暴露给Python</h2><p>使用<code>py::class_</code>将自定义的C++类型暴露给Python（<a href="https://pybind11.readthedocs.io/en/stable/classes.html" target="_blank" rel="noopener">参考这里</a>）。C++类型传递给Python时会在原生C++类型外加一层wrapper，从Python取回时只用去掉wrapper即可。</p>
-<h2 id="Python原生类型暴露给C"><a href="#Python原生类型暴露给C" class="headerlink" title="Python原生类型暴露给C++"></a>Python原生类型暴露给C++</h2><p>在C++中取用Python的原生类型（例如：<code>tuple</code>、<code>list</code>），例如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// C++中使用Python对象</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">print_list</span><span class="params">(py::<span class="built_in">list</span> my_list)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> item : my_list) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; item &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Python中传入Python对象给C++:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>print_list([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br><span class="line"><span class="number">1</span> <span class="number">2</span> <span class="number">3</span></span><br></pre></td></tr></table></figure>
-<p>这个例子里Python中的<code>list</code>类型没有进行任何转换，只是被封装进了C++的<code>py::list</code>类中。目前Pybind11支持以下类型(<a href="https://pybind11.readthedocs.io/en/stable/advanced/pycpp" target="_blank" rel="noopener">参考这里</a>)：<code>handle</code>, <code>object</code>, <code>bool_</code>, <code>int_</code>, <code>float_</code>, <code>str</code>, <code>bytes</code>, <code>tuple</code>, <code>list</code>, <code>dict</code>, <code>slice</code>, <code>none</code>, <code>capsule</code>, <code>iterable</code>, <code>iterator</code>, <code>function</code>, <code>buffer</code>, <code>array</code>, <code>array_t</code>。</p>
-<h2 id="C-和Python原生类型间相互转换"><a href="#C-和Python原生类型间相互转换" class="headerlink" title="C++和Python原生类型间相互转换"></a>C++和Python原生类型间相互转换</h2><p>有些场景C++和Python都用的是各自的原生类型，Pybind11支持常见C++原生类型和Python原生类型间的相互转换，例如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">print_vector</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;v)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> item : v) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; item &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Python中调用：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; print_vector([1, 2, 3])</span><br><span class="line">1 2 3</span><br></pre></td></tr></table></figure>
-<p>容易注意到Python中传入的为<code>list</code>类型，而C++中处理的类型为<code>const std::vector&lt;int&gt; &amp;</code>。Pybind11这种默认类型转换会在原生类型间拷贝数据，例如上面Python中的调用会首先将list中的数据拷贝到一个<code>std::vector&lt;int&gt;</code>中，然后进行C++中的调用。</p>
-<p>NOTE: 默认的拷贝可能开销很大，可以通过手写<a href="https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#opaque" target="_blank" rel="noopener">opaque types</a>重载类型转换的wrapper来避免不必要的拷贝。opaque types还没有使用过，有机会单独挖坑写。</p>
-<h2 id="STL库"><a href="#STL库" class="headerlink" title="STL库"></a>STL库</h2><p>Pybind11默认（<code>pybind11/pybind11.h</code>）支持<code>std::pair&lt;&gt;</code>，<code>std::tuple&lt;&gt;</code>和<code>list</code>, <code>set</code>, <code>dict</code>之间的自动转换。引入<code>pybind11/stl.h</code>可以新增<code>std::vector&lt;&gt;</code>, <code>std::deque&lt;&gt;</code>, <code>std::list&lt;&gt;</code>, <code>std::array&lt;&gt;</code>, <code>std::set&lt;&gt;</code>, <code>std::unordered_set&lt;&gt;</code>, <code>std::map&lt;&gt;</code>和<code>std::unordered_map&lt;&gt;</code>的与Python的自动转换。</p>
-<h3 id="绑定STL容器"><a href="#绑定STL容器" class="headerlink" title="绑定STL容器"></a>绑定STL容器</h3><p><code>pybind11/stl_bind.h</code>可以帮助我们将STL容器作为原生对象暴露出来。例如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pybind11/stl_bind.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">PYBIND11_MAKE_OPAQUE(<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;);</span><br><span class="line">PYBIND11_MAKE_OPAQUE(<span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>, <span class="keyword">double</span>&gt;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 绑定</span></span><br><span class="line">py::bind_vector&lt;<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;(m, <span class="string">"VectorInt"</span>);</span><br><span class="line">py::bind_map&lt;<span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>, <span class="keyword">double</span>&gt;&gt;(m, <span class="string">"MapStringDouble"</span>);</span><br><span class="line"><span class="comment">// 或者同时设置绑定的作用域</span></span><br><span class="line">py::bind_vector&lt;<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;(m, <span class="string">"VectorInt"</span>, py::module_local(<span class="literal">false</span>));</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/07/27/Pybind11-Type-Conversions/" data-id="cknvw7rox0004w5w3ek56afn8" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -711,7 +687,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-compiler/" rel="tag">LLVM, compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mindspore-Python-Optimizer-C/" rel="tag">Mindspore, Python, Optimizer, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mood/" rel="tag">Mood</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance-C/" rel="tag">Performance, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow-Deep-Learning/" rel="tag">TensorFlow, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Work/" rel="tag">Work</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/manimgl/" rel="tag">manimgl</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mind-hack/" rel="tag">mind-hack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/signal-processing/" rel="tag">signal processing</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-compiler/" rel="tag">LLVM, compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mindspore-Python-Optimizer-C/" rel="tag">Mindspore, Python, Optimizer, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mood/" rel="tag">Mood</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance-C/" rel="tag">Performance, C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SNN-Deep-Learning/" rel="tag">SNN, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow-Deep-Learning/" rel="tag">TensorFlow, Deep Learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Work/" rel="tag">Work</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/manimgl/" rel="tag">manimgl</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mind-hack/" rel="tag">mind-hack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/productivity/" rel="tag">productivity</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pybind11-c-python/" rel="tag">pybind11, c++, python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/signal-processing/" rel="tag">signal processing</a></li></ul>
     </div>
   </div>
 
@@ -721,7 +697,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/LLVM-compiler/" style="font-size: 10px;">LLVM, compiler</a> <a href="/tags/Mindspore-Python-Optimizer-C/" style="font-size: 10px;">Mindspore, Python, Optimizer, C++</a> <a href="/tags/Mood/" style="font-size: 10px;">Mood</a> <a href="/tags/Performance-C/" style="font-size: 10px;">Performance, C++</a> <a href="/tags/SNN-Deep-Learning/" style="font-size: 20px;">SNN, Deep Learning</a> <a href="/tags/TensorFlow-Deep-Learning/" style="font-size: 10px;">TensorFlow, Deep Learning</a> <a href="/tags/Work/" style="font-size: 13.33px;">Work</a> <a href="/tags/c/" style="font-size: 16.67px;">c++</a> <a href="/tags/manimgl/" style="font-size: 10px;">manimgl</a> <a href="/tags/mind-hack/" style="font-size: 10px;">mind-hack</a> <a href="/tags/pybind11-c-python/" style="font-size: 16.67px;">pybind11, c++, python</a> <a href="/tags/signal-processing/" style="font-size: 10px;">signal processing</a>
+      <a href="/tags/LLVM-compiler/" style="font-size: 10px;">LLVM, compiler</a> <a href="/tags/Mindspore-Python-Optimizer-C/" style="font-size: 10px;">Mindspore, Python, Optimizer, C++</a> <a href="/tags/Mood/" style="font-size: 10px;">Mood</a> <a href="/tags/Performance-C/" style="font-size: 10px;">Performance, C++</a> <a href="/tags/SNN-Deep-Learning/" style="font-size: 20px;">SNN, Deep Learning</a> <a href="/tags/TensorFlow-Deep-Learning/" style="font-size: 10px;">TensorFlow, Deep Learning</a> <a href="/tags/Work/" style="font-size: 13.33px;">Work</a> <a href="/tags/c/" style="font-size: 16.67px;">c++</a> <a href="/tags/manimgl/" style="font-size: 10px;">manimgl</a> <a href="/tags/mind-hack/" style="font-size: 10px;">mind-hack</a> <a href="/tags/productivity/" style="font-size: 10px;">productivity</a> <a href="/tags/pybind11-c-python/" style="font-size: 16.67px;">pybind11, c++, python</a> <a href="/tags/signal-processing/" style="font-size: 10px;">signal processing</a>
     </div>
   </div>
 
@@ -730,7 +706,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/06/">June 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">May 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">April 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">July 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/06/">June 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">May 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">April 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a></li></ul>
     </div>
   </div>
 
@@ -741,6 +717,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2021/07/14/wolai-and-notion/">wolai and notion</a>
+          </li>
         
           <li>
             <a href="/2021/06/24/Huawei-Summary-1-Mindspore/">Huawei Summary 1: Mindspore</a>
@@ -756,10 +736,6 @@
         
           <li>
             <a href="/2021/04/24/manimgl-install/">manimgl install</a>
-          </li>
-        
-          <li>
-            <a href="/2020/09/07/LLVM0/">LLVM0</a>
           </li>
         
       </ul>
